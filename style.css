@@ -27,7 +27,6 @@ html, body {
 }
 .category-header h1 { margin: 0 0 10px 0; }
 
-/* ⬇️ (수정) select 스타일 복구 ⬇️ */
 #categorySelect, #sourceLang, #targetLang {
     width: 100%;
     padding: 12px;
@@ -39,23 +38,29 @@ html, body {
     flex-shrink: 0;
 }
 #categorySelect { margin-bottom: 10px; }
-#sourceLang, #targetLang { margin-bottom: 10px; font-size: 1em; } /* 폰트/마진 조정 */
-
-/* ⬇️ (삭제) .language-select-wrapper 삭제 ⬇️ */
+#sourceLang, #targetLang { margin-bottom: 10px; font-size: 1em; }
 
 .translation-wrapper {
-    flex-grow: 1; display: flex; gap: 15px; min-height: 0;
-    /* ⬇️ (추가) 버튼 중앙 정렬을 위해 ⬇️ */
+    flex-grow: 1; 
+    display: flex;
+    /* ⬇️ ⬇️ ⬇️ (수정) 모바일/데스크톱 모두 세로 배치 ⬇️ ⬇️ ⬇️ */
+    flex-direction: column; 
+    gap: 15px; 
+    min-height: 0;
     align-items: center; 
 }
 
 .language-box {
-    background-color: var(--box-color); border: 1px solid var(--border-color); border-radius: 12px; padding: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); display: flex; flex-direction: column; width: 100%; gap: 10px; min-height: 0;
-    /* ⬇️ (추가) flex-grow로 남은 공간 차지 ⬇️ */
-    flex-grow: 1;
+    background-color: var(--box-color); border: 1px solid var(--border-color); border-radius: 12px; padding: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); display: flex; flex-direction: column; 
+    /* ⬇️ ⬇️ ⬇️ (수정) 모바일/데스크톱 모두 100% 너비 ⬇️ ⬇️ ⬇️ */
+    width: 100%; 
+    gap: 10px; 
+    min-height: 0;
+    flex-grow: 1; /* ⬇️ (수정) 박스가 남은 세로 공간을 나눠 가짐 ⬇️ */
 }
 
 /* 텍스트 입력/결과창 (동일) */
+/* (flex-grow: 1 덕분에 부모(.language-box)의 남은 공간을 꽉 채움) */
 #searchInput, #resultArea {
     width: 100%; height: 100%; flex-grow: 1; padding: 12px; font-size: 1.2em; border: 1px solid var(--border-color); border-radius: 8px; box-sizing: border-box; background-color: var(--input-bg-color); color: var(--text-color); resize: none;
 }
@@ -63,7 +68,7 @@ html, body {
 #resultArea { background-color: var(--result-bg-color); }
 textarea::placeholder { color: var(--secondary-text); }
 
-/* ⬇️ ⬇️ ⬇️ (NEW) 교환 버튼 스타일 (위치 변경됨) ⬇️ ⬇️ ⬇️ */
+/* 교환 버튼 (수정됨) */
 #swapButton {
     padding: 10px;
     font-size: 1.5rem;
@@ -74,47 +79,24 @@ textarea::placeholder { color: var(--secondary-text); }
     cursor: pointer;
     line-height: 1;
     transition: transform 0.2s ease;
-    flex-shrink: 0; /* 줄어들지 않도록 */
+    flex-shrink: 0;
+    /* ⬇️ ⬇️ ⬇️ (수정) 회전 각도 0도 (세로 레이아웃) ⬇️ ⬇️ ⬇️ */
+    transform: rotate(0deg); 
 }
 #swapButton:hover {
-    transform: rotate(180deg);
+    transform: rotate(180deg); /* ⬇️ (수정) 호버 시 180도 회전 ⬇️ */
 }
 
-/* 번역 버튼 */
+/* ⬇️ ⬇️ ⬇️ (수정) 번역 버튼 숨기기 ⬇️ ⬇️ ⬇️ */
 #translateButton {
-    padding: 15px; font-size: 1.2em; background-color: var(--primary-color); color: var(--primary-text); border: none; border-radius: 10px; cursor: pointer; font-weight: bold; transition: background-color 0.2s ease; flex-shrink: 0;
+    display: none; 
 }
-#translateButton:hover { filter: brightness(1.1); }
 
 /* --- 5. 반응형 레이아웃 (수정) --- */
-@media (max-width: 768px) {
-    /* 모바일: 가로 배치 */
-    .translation-wrapper {
-        flex-direction: row; align-items: center;
-    }
-    #sourceBox { order: 1; }
-    #swapButton { order: 2; transform: rotate(90deg); } /* ⬇️ (수정) 세로로 회전 ⬇️ */
-    #targetBox { order: 3; }
-    #translateButton { display: none; } /* ⬇️ (수정) 번역 버튼 숨김 ⬇️ */
+/* (이제 모바일과 데스크톱의 레이아웃이 거의 동일하므로, media query가 필요 없습니다) */
+/* (순서 정렬) */
+#sourceBox { order: 1; }
+#swapButton { order: 2; }
+#targetBox { order: 3; }
 
-    /* ⬇️ (수정) 모바일에서 박스 크기 자동 조절 ⬇️ */
-    .language-box {
-        /* (100% - gap*2 - button_width) / 2 */
-        width: calc(50% - 35px); 
-    }
-}
-
-@media (min-width: 769px) {
-    /* 데스크톱: 세로 배치 */
-    .translation-wrapper {
-        flex-direction: column; align-items: center;
-    }
-    #sourceBox { order: 1; width: 100%; } /* ⬇️ (수정) width 100% ⬇️ */
-    #swapButton { order: 2; transform: rotate(0deg); } /* ⬇️ (수정) 회전 리셋 ⬇️ */
-    #translateButton { order: 3; width: 100%; } /* ⬇️ (수정) width 100% ⬇️ */
-    #targetBox { order: 4; width: 100%; } /* ⬇️ (수정) width 100% ⬇️ */
-    
-    #swapButton:hover {
-        transform: rotate(180deg); /* ⬇️ (수정) 데스크톱 호버 효과 ⬇️ */
-    }
-}
+/* (기존 미디어 쿼리 삭제) */
