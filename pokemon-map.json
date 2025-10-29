@@ -1,17 +1,20 @@
 {
-    "이상해씨": "bulbasaur",
-    "bulbasaur": "bulbasaur", 
-    "フシギダネ": "bulbasaur",
-    
-    "파이리": "charmander",
-    "charmander": "charmander",
-    "ヒトカゲ": "charmander",
-    
-    "꼬부기": "squirtle",
-    "squirtle": "squirtle",
-    "ゼニカメ": "squirtle",
-    
-    "피카츄": "pikachu",
-    "pikachu": "pikachu",
-    "ピカチュウ": "pikachu"
+    "ko": {
+        "이상해씨": "bulbasaur",
+        "파이리": "charmander",
+        "꼬부기": "squirtle",
+        "피카츄": "pikachu"
+    },
+    "en": {
+        "bulbasaur": "bulbasaur",
+        "charmander": "charmander",
+        "squirtle": "squirtle",
+        "pikachu": "pikachu"
+    },
+    "ja": {
+        "フシギダネ": "bulbasaur",
+        "ヒトカゲ": "charmander",
+        "ゼニガメ": "squirtle",
+        "ピカチュウ": "pikachu"
+    }
 }
