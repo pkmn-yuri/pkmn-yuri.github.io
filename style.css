@@ -27,53 +27,32 @@ html, body {
 }
 .category-header h1 { margin: 0 0 10px 0; }
 
-#categorySelect {
-    width: 100%; padding: 12px; font-size: 1.1em; border-radius: 8px; border: 1px solid var(--border-color); background-color: var(--input-bg-color); color: var(--text-color); flex-shrink: 0; margin-bottom: 10px;
-}
-
-/* ⬇️ ⬇️ ⬇️ (NEW) 언어 선택 + 교환 버튼 래퍼 ⬇️ ⬇️ ⬇️ */
-.language-select-wrapper {
-    display: flex;
-    align-items: center;
-    gap: 10px;
+/* ⬇️ (수정) select 스타일 복구 ⬇️ */
+#categorySelect, #sourceLang, #targetLang {
     width: 100%;
-    flex-shrink: 0; /* 줄어들지 않도록 */
-}
-
-/* ⬇️ ⬇️ ⬇️ (NEW) 교환 버튼 스타일 ⬇️ ⬇️ ⬇️ */
-#swapButton {
-    padding: 8px;
-    font-size: 1.2rem;
-    border-radius: 50%;
-    border: 1px solid var(--border-color);
-    background-color: var(--box-color);
-    color: var(--text-color);
-    cursor: pointer;
-    line-height: 1; /* 아이콘 중앙 정렬 */
-    transition: transform 0.2s ease;
-}
-#swapButton:hover {
-    transform: rotate(180deg);
-}
-
-/* ⬇️ (수정) select가 래퍼의 남은 공간을 차지하도록 */
-#sourceLang, #targetLang {
-    width: 100%; /* flex-grow 대신 width 100% */
-    padding: 10px; /* 패딩 약간 줄임 */
-    font-size: 1em;
+    padding: 12px;
+    font-size: 1.1em;
     border-radius: 8px;
     border: 1px solid var(--border-color);
     background-color: var(--input-bg-color);
     color: var(--text-color);
-    flex-grow: 1; /* 남은 공간 차지 */
+    flex-shrink: 0;
 }
+#categorySelect { margin-bottom: 10px; }
+#sourceLang, #targetLang { margin-bottom: 10px; font-size: 1em; } /* 폰트/마진 조정 */
+
+/* ⬇️ (삭제) .language-select-wrapper 삭제 ⬇️ */
 
 .translation-wrapper {
     flex-grow: 1; display: flex; gap: 15px; min-height: 0;
+    /* ⬇️ (추가) 버튼 중앙 정렬을 위해 ⬇️ */
+    align-items: center; 
 }
 
 .language-box {
     background-color: var(--box-color); border: 1px solid var(--border-color); border-radius: 12px; padding: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); display: flex; flex-direction: column; width: 100%; gap: 10px; min-height: 0;
+    /* ⬇️ (추가) flex-grow로 남은 공간 차지 ⬇️ */
+    flex-grow: 1;
 }
 
 /* 텍스트 입력/결과창 (동일) */
@@ -84,7 +63,24 @@ html, body {
 #resultArea { background-color: var(--result-bg-color); }
 textarea::placeholder { color: var(--secondary-text); }
 
-/* 번역 버튼 (동일) */
+/* ⬇️ ⬇️ ⬇️ (NEW) 교환 버튼 스타일 (위치 변경됨) ⬇️ ⬇️ ⬇️ */
+#swapButton {
+    padding: 10px;
+    font-size: 1.5rem;
+    border-radius: 50%;
+    border: 1px solid var(--border-color);
+    background-color: var(--box-color);
+    color: var(--text-color);
+    cursor: pointer;
+    line-height: 1;
+    transition: transform 0.2s ease;
+    flex-shrink: 0; /* 줄어들지 않도록 */
+}
+#swapButton:hover {
+    transform: rotate(180deg);
+}
+
+/* 번역 버튼 */
 #translateButton {
     padding: 15px; font-size: 1.2em; background-color: var(--primary-color); color: var(--primary-text); border: none; border-radius: 10px; cursor: pointer; font-weight: bold; transition: background-color 0.2s ease; flex-shrink: 0;
 }
@@ -94,80 +90,31 @@ textarea::placeholder { color: var(--secondary-text); }
 @media (max-width: 768px) {
     /* 모바일: 가로 배치 */
     .translation-wrapper {
-        flex-direction: row; align-items: stretch;
+        flex-direction: row; align-items: center;
     }
-    #translateButton { display: none; }
-    
-    /* ⬇️ ⬇️ ⬇️ (NEW) 모바일 교환 버튼 스타일 ⬇️ ⬇️ ⬇️ */
-    .language-select-wrapper {
-        flex-direction: column; /* 교환 버튼이 가운데 오도록 세로 배치 */
-    }
-    #sourceLang { order: 1; } /* 순서 변경: [소스 언어] */
-    #swapButton   { order: 2; transform: rotate(90deg); } /* [교환 버튼] */
-    #targetLang { order: 3; } /* [타겟 언어] */
-    
-    /* ⬇️ (수정) Target Box가 사라지고 Source Box가 2개가 됨 */
-    #sourceBox { width: 50%; }
-    #targetBox { width: 50%; }
+    #sourceBox { order: 1; }
+    #swapButton { order: 2; transform: rotate(90deg); } /* ⬇️ (수정) 세로로 회전 ⬇️ */
+    #targetBox { order: 3; }
+    #translateButton { display: none; } /* ⬇️ (수정) 번역 버튼 숨김 ⬇️ */
 
-    /* ⬇️ (NEW) 모바일에서 Target Box의 UI 조정 */
-    #targetBox .language-select-wrapper {
-        display: none; /* Target에서는 언어 선택창 숨김 */
-    }
-    #targetBox #resultArea {
-        margin-top: 10px; /* 상단 여백 보정 */
+    /* ⬇️ (수정) 모바일에서 박스 크기 자동 조절 ⬇️ */
+    .language-box {
+        /* (100% - gap*2 - button_width) / 2 */
+        width: calc(50% - 35px); 
     }
 }
 
 @media (min-width: 769px) {
     /* 데스크톱: 세로 배치 */
     .translation-wrapper {
-        flex-direction: column;
+        flex-direction: column; align-items: center;
     }
-    #translateButton { display: block; }
+    #sourceBox { order: 1; width: 100%; } /* ⬇️ (수정) width 100% ⬇️ */
+    #swapButton { order: 2; transform: rotate(0deg); } /* ⬇️ (수정) 회전 리셋 ⬇️ */
+    #translateButton { order: 3; width: 100%; } /* ⬇️ (수정) width 100% ⬇️ */
+    #targetBox { order: 4; width: 100%; } /* ⬇️ (수정) width 100% ⬇️ */
     
-    /* ⬇️ (NEW) Target Box에서 언어 선택창 숨김 */
-    #targetBox .language-select-wrapper {
-        display: none;
-    }
-}
-
-/* ⬇️ ⬇️ ⬇️ (NEW) 데스크톱에서 Target Box 레이아웃 수정 ⬇️ ⬇️ ⬇️ */
-/* (모바일에서는 source/target이 나눠져 있지만, 데스크톱에서는 source/translate/target 순서) */
-@media (min-width: 769px) {
-    #sourceBox .language-select-wrapper {
-        display: flex; /* 데스크톱에서는 다시 가로 배치 */
-        flex-direction: row;
-    }
-    #sourceBox #swapButton {
-        transform: rotate(0deg); /* 회전 리셋 */
-    }
-    
-    /* ⬇️ (수정) 데스크톱에서는 Target Box가 Source/Button 뒤에 오도록 */
-    #sourceBox { order: 1; }
-    #translateButton { order: 2; }
-    #targetBox { order: 3; }
-
-    /* ⬇️ (NEW) Target Box 내부 여백 조정 */
-    #targetBox {
-        gap: 0; /* 내부 갭 제거 */
-        padding-top: 0; /* 상단 패딩 제거 */
-    }
-}
-
-/* ⬇️ ⬇️ ⬇️ (NEW) 모바일 전용 레이아웃 수정 ⬇️ ⬇️ ⬇️ */
-/* 모바일에서는 Source / Target이 나란히 표시됨 */
-@media (max-width: 768px) {
-    #sourceBox { order: 1; }
-    #targetBox { order: 2; }
-
-    /* ⬇️ (NEW) Target Box의 언어선택창을 완전히 숨김 */
-    #targetBox .language-select-wrapper {
-        display: none !important;
-    }
-    /* ⬇️ (NEW) Target Box의 패딩/갭 조정 */
-    #targetBox {
-        gap: 0;
-        padding: 15px;
+    #swapButton:hover {
+        transform: rotate(180deg); /* ⬇️ (수정) 데스크톱 호버 효과 ⬇️ */
     }
 }
