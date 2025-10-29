@@ -1,0 +1,22 @@
+{
+    "bulbasaur": {
+        "ko": "이상해씨",
+        "en": "Bulbasaur",
+        "ja": "フシギダネ"
+    },
+    "charmander": {
+        "ko": "파이리",
+        "en": "Charmander",
+        "ja": "ヒトカゲ"
+    },
+    "squirtle": {
+        "ko": "꼬부기",
+        "en": "Squirtle",
+        "ja": "ゼニガメ"
+    },
+    "pikachu": {
+        "ko": "피카츄",
+        "en": "Pikachu",
+        "ja": "ピカチュウ"
+    }
+}
