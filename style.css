@@ -1,173 +1,121 @@
 /* --- 1. 색상 변수 정의 (동일) --- */
 :root {
-    --bg-color: #f0f2f5;
-    --box-color: #ffffff;
-    --text-color: #202124;
-    --border-color: #dadce0;
-    --input-bg-color: #ffffff;
-    --input-focus-border: #3B82F6;
-    --primary-color: #3B82F6;
-    --primary-text: #ffffff;
-    --secondary-text: #5f6368;
-    --result-bg-color: #f8f9fa;
+    --bg-color: #f0f2f5; --box-color: #ffffff; --text-color: #202124; --border-color: #dadce0; --input-bg-color: #ffffff; --input-focus-border: #3B82F6; --primary-color: #3B82F6; --primary-text: #ffffff; --secondary-text: #5f6368; --result-bg-color: #f8f9fa;
 }
 html.dark {
-    --bg-color: #202124;
-    --box-color: #2d2e30;
-    --text-color: #e8eaed;
-    --border-color: #5f6368;
-    --input-bg-color: #3c4043;
-    --input-focus-border: #8ab4f8;
-    --primary-color: #8ab4f8;
-    --primary-text: #202124;
-    --secondary-text: #bdc1c6;
-    --result-bg-color: #2d2e30;
+    --bg-color: #202124; --box-color: #2d2e30; --text-color: #e8eaed; --border-color: #5f6368; --input-bg-color: #3c4043; --input-focus-border: #8ab4f8; --primary-color: #8ab4f8; --primary-text: #202124; --secondary-text: #bdc1c6; --result-bg-color: #2d2e30;
 }
 
-/* --- 2. 기본 설정 (수정됨) --- */
+/* --- 2. 기본 설정 (동일) --- */
 html, body {
-    height: 100%;
-    margin: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    background-color: var(--bg-color);
-    color: var(--text-color);
-    transition: background-color 0.2s ease, color 0.2s ease;
-    /* ⬇️ ⬇️ ⬇️ (수정) 스크롤이 절대 생기지 않도록 ⬇️ ⬇️ ⬇️ */
-    overflow: hidden; 
+    height: 100%; margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background-color: var(--bg-color); color: var(--text-color); transition: background-color 0.2s ease, color 0.2s ease; overflow: hidden;
 }
 
 /* --- 3. 테마 토글 버튼 (동일) --- */
 #themeToggle {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    width: 50px;
-    height: 50px;
+    position: fixed; top: 20px; right: 20px; width: 50px; height: 50px; border-radius: 50%; border: 1px solid var(--border-color); background-color: var(--box-color); color: var(--text-color); font-size: 1.5rem; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1); z-index: 1000; transition: background-color 0.2s ease, transform 0.2s ease;
+}
+#themeToggle:hover { transform: scale(1.1); }
+
+/* --- 4. 레이아웃 (수정됨) --- */
+.container {
+    width: 100%; height: 100%; max-width: 1000px; padding: 20px; padding-top: 80px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: flex-start;
+}
+
+.category-header {
+    margin-bottom: 20px; text-align: center; flex-shrink: 0;
+}
+.category-header h1 { margin: 0 0 10px 0; }
+
+#categorySelect {
+    width: 100%; padding: 12px; font-size: 1.1em; border-radius: 8px; border: 1px solid var(--border-color); background-color: var(--input-bg-color); color: var(--text-color); flex-shrink: 0; margin-bottom: 10px;
+}
+
+/* ⬇️ ⬇️ ⬇️ (NEW) 언어 선택 + 교환 버튼 래퍼 ⬇️ ⬇️ ⬇️ */
+.language-select-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    flex-shrink: 0; /* 줄어들지 않도록 */
+}
+
+/* ⬇️ ⬇️ ⬇️ (NEW) 교환 버튼 스타일 ⬇️ ⬇️ ⬇️ */
+#swapButton {
+    padding: 8px;
+    font-size: 1.2rem;
     border-radius: 50%;
     border: 1px solid var(--border-color);
     background-color: var(--box-color);
     color: var(--text-color);
-    font-size: 1.5rem;
     cursor: pointer;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    z-index: 1000;
-    transition: background-color 0.2s ease, transform 0.2s ease;
+    line-height: 1; /* 아이콘 중앙 정렬 */
+    transition: transform 0.2s ease;
 }
-#themeToggle:hover {
-    transform: scale(1.1);
-}
-
-/* --- 4. 레이아웃 (수정됨) --- */
-.container {
-    width: 100%;
-    height: 100%; /* ⬇️ (수정) min-height가 아닌 100% ⬇️ */
-    max-width: 1000px;
-    padding: 20px;
-    padding-top: 80px; /* ⬇️ (수정) 모바일/데스크톱 공통 상단 여백 ⬇️ */
-    box-sizing: border-box; /* 패딩이 크기를 넘지 않게 */
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start; /* ⬇️ (수정) 항상 위에서부터 정렬 ⬇️ */
+#swapButton:hover {
+    transform: rotate(180deg);
 }
 
-.category-header {
-    margin-bottom: 20px;
-    text-align: center;
-    flex-shrink: 0; /* ⬇️ (추가) 헤더가 줄어들지 않도록 ⬇️ */
-}
-.category-header h1 {
-    margin: 0 0 10px 0;
-}
-
-#categorySelect, #sourceLang, #targetLang {
-    width: 100%;
-    padding: 12px;
-    font-size: 1.1em;
+/* ⬇️ (수정) select가 래퍼의 남은 공간을 차지하도록 */
+#sourceLang, #targetLang {
+    width: 100%; /* flex-grow 대신 width 100% */
+    padding: 10px; /* 패딩 약간 줄임 */
+    font-size: 1em;
     border-radius: 8px;
     border: 1px solid var(--border-color);
     background-color: var(--input-bg-color);
     color: var(--text-color);
-    flex-shrink: 0; /* ⬇️ (추가) 선택창이 줄어들지 않도록 ⬇️ */
-}
-#categorySelect {
-    margin-bottom: 10px;
+    flex-grow: 1; /* 남은 공간 차지 */
 }
 
 .translation-wrapper {
-    /* ⬇️ ⬇️ ⬇️ (수정) 남은 공간을 모두 차지 (핵심) ⬇️ ⬇️ ⬇️ */
-    flex-grow: 1; 
-    display: flex;
-    gap: 15px;
-    /* ⬇️ (추가) 내용물이 넘칠 경우를 대비 (매우 중요) ⬇️ */
-    min-height: 0; 
+    flex-grow: 1; display: flex; gap: 15px; min-height: 0;
 }
 
 .language-box {
-    background-color: var(--box-color);
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    padding: 15px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    gap: 10px;
-    /* ⬇️ (추가) 내용물이 넘칠 경우를 대비 (매우 중요) ⬇️ */
-    min-height: 0; 
+    background-color: var(--box-color); border: 1px solid var(--border-color); border-radius: 12px; padding: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); display: flex; flex-direction: column; width: 100%; gap: 10px; min-height: 0;
 }
 
-/* 텍스트 입력/결과창 */
+/* 텍스트 입력/결과창 (동일) */
 #searchInput, #resultArea {
-    width: 100%;
-    /* ⬇️ ⬇️ ⬇️ (수정) 150px 고정이 아닌, 남은 공간 모두 차지 ⬇️ ⬇️ ⬇️ */
-    height: 100%;
-    flex-grow: 1; 
-    padding: 12px;
-    font-size: 1.2em;
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    box-sizing: border-box;
-    background-color: var(--input-bg-color);
-    color: var(--text-color);
-    resize: none;
+    width: 100%; height: 100%; flex-grow: 1; padding: 12px; font-size: 1.2em; border: 1px solid var(--border-color); border-radius: 8px; box-sizing: border-box; background-color: var(--input-bg-color); color: var(--text-color); resize: none;
 }
-#searchInput:focus {
-    outline: 2px solid var(--input-focus-border);
-    border-color: transparent;
-}
-#resultArea {
-    background-color: var(--result-bg-color);
-}
-textarea::placeholder {
-    color: var(--secondary-text);
-}
+#searchInput:focus { outline: 2px solid var(--input-focus-border); border-color: transparent; }
+#resultArea { background-color: var(--result-bg-color); }
+textarea::placeholder { color: var(--secondary-text); }
 
-/* 번역 버튼 */
+/* 번역 버튼 (동일) */
 #translateButton {
-    padding: 15px;
-    font-size: 1.2em;
-    background-color: var(--primary-color);
-    color: var(--primary-text);
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-    font-weight: bold;
-    transition: background-color 0.2s ease;
-    flex-shrink: 0; /* ⬇️ (추가) 버튼이 줄어들지 않도록 ⬇️ */
+    padding: 15px; font-size: 1.2em; background-color: var(--primary-color); color: var(--primary-text); border: none; border-radius: 10px; cursor: pointer; font-weight: bold; transition: background-color 0.2s ease; flex-shrink: 0;
 }
-#translateButton:hover {
-    filter: brightness(1.1);
-}
+#translateButton:hover { filter: brightness(1.1); }
 
 /* --- 5. 반응형 레이아웃 (수정) --- */
 @media (max-width: 768px) {
     /* 모바일: 가로 배치 */
     .translation-wrapper {
-        flex-direction: row;
-        align-items: stretch;
+        flex-direction: row; align-items: stretch;
     }
-    #translateButton {
-        display: none; /* 모바일에서 버튼 숨기기 */
+    #translateButton { display: none; }
+    
+    /* ⬇️ ⬇️ ⬇️ (NEW) 모바일 교환 버튼 스타일 ⬇️ ⬇️ ⬇️ */
+    .language-select-wrapper {
+        flex-direction: column; /* 교환 버튼이 가운데 오도록 세로 배치 */
+    }
+    #sourceLang { order: 1; } /* 순서 변경: [소스 언어] */
+    #swapButton   { order: 2; transform: rotate(90deg); } /* [교환 버튼] */
+    #targetLang { order: 3; } /* [타겟 언어] */
+    
+    /* ⬇️ (수정) Target Box가 사라지고 Source Box가 2개가 됨 */
+    #sourceBox { width: 50%; }
+    #targetBox { width: 50%; }
+
+    /* ⬇️ (NEW) 모바일에서 Target Box의 UI 조정 */
+    #targetBox .language-select-wrapper {
+        display: none; /* Target에서는 언어 선택창 숨김 */
+    }
+    #targetBox #resultArea {
+        margin-top: 10px; /* 상단 여백 보정 */
     }
 }
 
@@ -176,7 +124,50 @@ textarea::placeholder {
     .translation-wrapper {
         flex-direction: column;
     }
-    #translateButton {
-        display: block; /* 데스크톱에서 버튼 보이기 */
+    #translateButton { display: block; }
+    
+    /* ⬇️ (NEW) Target Box에서 언어 선택창 숨김 */
+    #targetBox .language-select-wrapper {
+        display: none;
+    }
+}
+
+/* ⬇️ ⬇️ ⬇️ (NEW) 데스크톱에서 Target Box 레이아웃 수정 ⬇️ ⬇️ ⬇️ */
+/* (모바일에서는 source/target이 나눠져 있지만, 데스크톱에서는 source/translate/target 순서) */
+@media (min-width: 769px) {
+    #sourceBox .language-select-wrapper {
+        display: flex; /* 데스크톱에서는 다시 가로 배치 */
+        flex-direction: row;
+    }
+    #sourceBox #swapButton {
+        transform: rotate(0deg); /* 회전 리셋 */
+    }
+    
+    /* ⬇️ (수정) 데스크톱에서는 Target Box가 Source/Button 뒤에 오도록 */
+    #sourceBox { order: 1; }
+    #translateButton { order: 2; }
+    #targetBox { order: 3; }
+
+    /* ⬇️ (NEW) Target Box 내부 여백 조정 */
+    #targetBox {
+        gap: 0; /* 내부 갭 제거 */
+        padding-top: 0; /* 상단 패딩 제거 */
+    }
+}
+
+/* ⬇️ ⬇️ ⬇️ (NEW) 모바일 전용 레이아웃 수정 ⬇️ ⬇️ ⬇️ */
+/* 모바일에서는 Source / Target이 나란히 표시됨 */
+@media (max-width: 768px) {
+    #sourceBox { order: 1; }
+    #targetBox { order: 2; }
+
+    /* ⬇️ (NEW) Target Box의 언어선택창을 완전히 숨김 */
+    #targetBox .language-select-wrapper {
+        display: none !important;
+    }
+    /* ⬇️ (NEW) Target Box의 패딩/갭 조정 */
+    #targetBox {
+        gap: 0;
+        padding: 15px;
     }
 }
