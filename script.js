@@ -77,5 +77,38 @@ searchInput.addEventListener('keyup', function(event) {
     }
 });
 
+// ----------------------------------------------------
+// ⬇️ ⬇️ ⬇️ 여기에 새 코드가 추가됩니다 ⬇️ ⬇️ ⬇️
+// ----------------------------------------------------
+
+// 7. (NEW) 언어 선택창 동기화 함수
+// (한쪽에서 선택된 언어를 다른 쪽에서 비활성화시킵니다)
+function syncLanguages() {
+    const sourceVal = sourceLangSelect.value;
+    const targetVal = targetLangSelect.value;
+
+    // '번역될' 언어(Target) 목록 업데이트
+    // (Source에서 선택된 언어를 비활성화)
+    for (const option of targetLangSelect.options) {
+        // 현재 옵션의 값이 sourceVal(예: "ko")과 같다면 disabled = true
+        option.disabled = (option.value === sourceVal);
+    }
+
+    // '번역할' 언어(Source) 목록 업데이트
+    // (Target에서 선택된 언어를 비활성화)
+    for (const option of sourceLangSelect.options) {
+        // 현재 옵션의 값이 targetVal(예: "en")과 같다면 disabled = true
+        option.disabled = (option.value === targetVal);
+    }
+}
+
+// 8. (NEW) 두 선택창이 '변경'될 때마다(change) 동기화 함수 실행
+sourceLangSelect.addEventListener('change', syncLanguages);
+targetLangSelect.addEventListener('change', syncLanguages);
+
 // --- 스크립트 시작 시 바로 데이터 로딩 실행 ---
 loadData();
+
+// 9. (NEW) 페이지가 처음 로드될 때 동기화 함수를 1회 실행
+// (초기 설정: '한국어'와 'English'가 서로 비활성화되도록)
+syncLanguages();
