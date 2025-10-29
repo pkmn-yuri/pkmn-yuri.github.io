@@ -30,15 +30,17 @@ async function loadData() {
 
 // 4. 번역 실행 함수
 function doTranslate() {
-    // 4.1. 사용자가 입력한 값 (예: "피카츄")
-    const query = searchInput.value.trim();
+    
+    // 4.1. 사용자가 입력한 값 (예: "Pikachu" 또는 "pikachu")
+    // ⬇️ ⬇️ ⬇️ 바로 이 부분입니다! ⬇️ ⬇️ ⬇️
+    // .toLowerCase() 를 추가해서 모든 입력을 소문자로 바꿉니다.
+    const query = searchInput.value.trim().toLowerCase();
     
     // 4.2. 사용자가 번역하길 원하는 언어 (예: "en")
     const targetLang = targetLangSelect.value;
 
     // 4.3. 통합 지도(pokemonLookup)에서 마스터 ID를 찾습니다.
-    // (예: "피카츄" -> "pikachu")
-    // (예: "ピカチュウ" -> "pikachu")
+    // (이제 "pikachu" (소문자) 키만 찾으면 됩니다)
     const masterKey = pokemonLookup[query];
 
     // 4.4. 마스터 ID가 없다면 (데이터에 없는 포켓몬)
