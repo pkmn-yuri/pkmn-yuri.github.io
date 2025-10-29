@@ -19,7 +19,7 @@ async function loadData() {
         masterDB = await response.json();
         console.log('마스터 DB 로딩 성공!');
         
-        // (NEW) 'character' 카테고리(수동)를 제외하고, DB가 비어있는지 체크
+        // (NEW) 'character' 카테고리(수동)만 DB가 비어있는지 체크
         for (const category in masterDB) {
             if (category === 'character' && Object.keys(masterDB[category].db).length === 0) {
                 const option = categorySelect.querySelector(`option[value="${category}"]`);
@@ -32,7 +32,7 @@ async function loadData() {
     }
 }
 
-// 4. 번역 실행 함수 (⭐️⭐️⭐️ 대규모 수정 ⭐️⭐️⭐️)
+// 4. 번역 실행 함수 (⭐️⭐️⭐️ 하이브리드 로직으로 대규모 수정 ⭐️⭐️⭐️)
 async function doTranslate() {
     const query = searchInput.value.trim().toLowerCase();
     const category = categorySelect.value;
@@ -45,75 +45,84 @@ async function doTranslate() {
     if (!targetLang) { resultArea.value = '번역될 언어를 선택하세요.'; return; }
     if (!masterDB[category]) { resultArea.value = '카테고리 오류'; return; }
 
-    // (NEW) API를 사용하는 카테고리 목록
-    const apiCategories = ['pokemon', 'ability', 'move', 'item', 'location', 'nature'];
-    
-    if (apiCategories.includes(category)) {
-        // --- 4A. API 사용 카테고리 (6개) ---
-        await handleApiTranslation(query, category, sourceLang, targetLang);
-    } else {
-        // --- 4B. 로컬 DB 사용 카테고리 (e.g., 'character') ---
-        handleLocalTranslation(query, category, sourceLang, targetLang);
-    }
-}
-
-// 4A-1. (NEW) ⭐️ API 번역 일반 함수
-async function handleApiTranslation(query, category, sourceLang, targetLang) {
-    // 1. 로컬 맵에서 리소스 ID (e.g., 25 또는 "static") 찾기
+    // 1. '지도(map)'에서 '리소스 ID'를 찾습니다.
     const langMap = masterDB[category].map[sourceLang];
     const resourceId = langMap ? langMap[query] : undefined;
+    
+    // (e.g., resourceId는 25(숫자) 또는 "static"(문자열) 또는 "probopass-hisuian"(문자열)일 수 있습니다)
 
     if (!resourceId) {
         resultArea.value = '결과 없음';
         return;
     }
 
+    // 2. (NEW) 하이브리드 분기
+    let translation;
+    
+    // 2A. ID가 '문자열'인 경우 (로컬 DB 우선)
+    if (typeof resourceId === 'string') {
+        const localEntry = masterDB[category].db[resourceId];
+        
+        if (localEntry) {
+            // 2A-1. 로컬 DB (e.g., 'character', '신규 포켓몬')
+            translation = localEntry[targetLang];
+            
+            if (!translation && category === 'pokemon' && targetLang === 'dex_id') {
+                translation = localEntry['dex_id'] || '로컬 DB에 dex_id 없음'; // 신규 포켓몬의 도감번호
+            }
+
+        } else {
+            // 2A-2. 로컬 DB에 없는 '문자열' ID -> API 호출 (e.g., "static", "modest")
+            translation = await fetchFromApi(resourceId, category, sourceLang, targetLang);
+        }
+    
+    // 2B. ID가 '숫자'인 경우 (포켓몬 API)
+    } else if (typeof resourceId === 'number') {
+        translation = await fetchFromApi(resourceId, category, sourceLang, targetLang);
+    
+    } else {
+        translation = '유효하지 않은 ID';
+    }
+
+    // 3. 최종 결과 표시
+    if (translation) {
+        resultArea.value = translation;
+    } else {
+        resultArea.value = '결과 없음 (최종)';
+    }
+}
+
+// (NEW) ⭐️ API 호출 함수 (통합)
+async function fetchFromApi(resourceId, category, sourceLang, targetLang) {
     // (특수 케이스) 포켓몬 -> 도감번호
     if (category === 'pokemon' && targetLang === 'dex_id') {
-        resultArea.value = resourceId;
-        return;
+        return resourceId.toString();
     }
-    // (특수 케이스) 도감번호 -> 포켓몬
+    // (특수 케이스) 도감번호 -> 이름 (resourceId가 숫자)
     if (category === 'pokemon' && sourceLang === 'dex_id') {
-         // (findNameInApiData가 처리하도록 resourceId를 API 데이터 객체처럼 만듦)
-         const translation = await findNameInApiData({ id: resourceId }, targetLang, category);
-         resultArea.value = translation || '결과 없음';
-         return;
+         const apiData = { id: resourceId }; // 가짜 API 데이터 객체
+         return await findNameInApiData(apiData, targetLang, category);
     }
 
     resultArea.value = 'API 검색 중...';
-
     try {
-        // 2. API 엔드포인트 결정 (카테고리 이름과 동일)
         const endpoint = category === 'pokemon' ? 'pokemon-species' : category;
-        
-        // 3. API 호출
         const response = await fetch(`https://pokeapi.co/api/v2/${endpoint}/${resourceId}`);
         if (!response.ok) { throw new Error('API 응답 실패'); }
         const apiData = await response.json();
         
-        // 4. API에서 이름 찾기
-        const translation = await findNameInApiData(apiData, targetLang, category);
-
-        if (translation) {
-            resultArea.value = translation;
-        } else {
-            resultArea.value = '해당 언어 데이터 없음 (API)';
-        }
+        return await findNameInApiData(apiData, targetLang, category);
 
     } catch (error) {
         console.error('API 호출 오류:', error);
-        resultArea.value = '오류: API 연결 실패';
+        return '오류: API 연결 실패';
     }
 }
 
-// 4A-2. (NEW) ⭐️ API에서 이름 찾는 헬퍼 함수
+// (NEW) ⭐️ API에서 이름 찾는 헬퍼 함수
 async function findNameInApiData(apiData, langCode, category) {
-    // (특수 케이스) 타겟이 '도감번호'인 경우
     if (langCode === 'dex_id' && category === 'pokemon') {
-         // 도감번호 -> 도감번호 (자기 자신)
          if (apiData.id) return apiData.id.toString();
-         // 이름 -> 도감번호
          const response = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${apiData.name}`);
          const speciesData = await response.json();
          return speciesData.id.toString();
@@ -123,7 +132,6 @@ async function findNameInApiData(apiData, langCode, category) {
     const apiLang = apiLangMap[langCode];
     if (!apiLang) return null;
 
-    // (포켓몬 도감번호 -> 이름 번역)
     if (apiData.id && !apiData.names) {
         const response = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${apiData.id}`);
         apiData = await response.json();
@@ -133,27 +141,7 @@ async function findNameInApiData(apiData, langCode, category) {
     return nameEntry ? nameEntry.name : null;
 }
 
-// 4B. (NEW) ⭐️ 로컬 DB 번역 함수
-function handleLocalTranslation(query, category, sourceLang, targetLang) {
-    const categoryMap = masterDB[category].map;
-    const categoryDB = masterDB[category].db;
-
-    // (로컬 DB는 'dex_id'를 지원하지 않음)
-    if (sourceLang === 'dex_id' || targetLang === 'dex_id') {
-        resultArea.value = '이 카테고리는 도감번호를 지원하지 않습니다.';
-        return;
-    }
-
-    const langMap = categoryMap[sourceLang];
-    const masterKey = langMap ? langMap[query] : undefined;
-    
-    if (!masterKey) { resultArea.value = '결과 없음'; return; }
-    const entry = categoryDB[masterKey];
-    const translation = entry ? entry[targetLang] : undefined;
-
-    if (translation) { resultArea.value = translation; }
-    else { resultArea.value = '해당 언어 데이터 없음'; }
-}
+// (삭제) ⭐️ handleLocalTranslation, handleApiTranslation, findPokemonName 함수 (위 함수로 통합됨)
 
 
 // 5. 버튼에 클릭 이벤트 연결 (동일)
@@ -187,7 +175,7 @@ function syncLanguages() {
 sourceLangSelect.addEventListener('change', syncLanguages);
 targetLangSelect.addEventListener('change', syncLanguages);
 
-// 9. 언어 교환 (Swap) 로직 (수정됨 - 에러 메시지 추가)
+// 9. 언어 교환 (Swap) 로직 (수정됨 - 에러 메시지 업데이트)
 swapButton.addEventListener('click', () => {
     const sourceVal = sourceLangSelect.value;
     const targetVal = targetLangSelect.value;
@@ -199,7 +187,8 @@ swapButton.addEventListener('click', () => {
     const isErrorOrPlaceholder = [
         '결과 없음', '카테고리 오류', '해당 언어 데이터 없음', 'API 검색 중...', '오류: API 연결 실패', 
         '해당 언어 데이터 없음 (API)', '카테고리를 먼저 선택하세요.', '번역할 언어를 선택하세요.', '번역될 언어를 선택하세요.',
-        '이 카테고리는 도감번호를 지원하지 않습니다.'
+        '이 카테고리는 도감번호를 지원하지 않습니다.', '결과 없음 (최종)', '유효하지 않은 ID',
+        '로컬 DB에 dex_id 없음'
     ].includes(resultText.trim());
 
     if (!isErrorOrPlaceholder && resultText.trim() !== '') {
@@ -232,14 +221,17 @@ window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (ev
     if (!savedTheme) { applyTheme(event.matches ? 'dark' : 'light'); }
 });
 
-// 11. 카테고리 변경 감지 로직 (동일)
+// 11. 카테고리 변경 감지 로직 (수정됨)
 function handleCategoryChange() {
     const category = categorySelect.value;
+    // (NEW) 'character' 카테고리도 도감번호를 지원하지 않음
     const isPokemon = (category === 'pokemon');
     const dexOptions = document.querySelectorAll('.pokemon-only-option');
+    
     dexOptions.forEach(option => {
         option.hidden = !isPokemon;
     });
+
     if (!isPokemon) {
         if (sourceLangSelect.value === 'dex_id') sourceLangSelect.value = "";
         if (targetLangSelect.value === 'dex_id') targetLangSelect.value = "";
