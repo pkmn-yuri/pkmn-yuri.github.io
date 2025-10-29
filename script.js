@@ -12,14 +12,12 @@ const swapButton = document.getElementById('swapButton');
 // 2. 마스터 데이터베이스 변수 (동일)
 let masterDB = {};
 
-// 3. 페이지가 로드되면 'database.json'을 불러옵니다. (수정됨)
+// 3. 페이지가 로드되면 'database.json'을 불러옵니다. (동일)
 async function loadData() {
     try {
         const response = await fetch('database.json');
         masterDB = await response.json();
         console.log('마스터 DB 로딩 성공!');
-        
-        // (NEW) 'character' 카테고리(수동)만 DB가 비어있는지 체크
         for (const category in masterDB) {
             if (category === 'character' && Object.keys(masterDB[category].db).length === 0) {
                 const option = categorySelect.querySelector(`option[value="${category}"]`);
@@ -32,7 +30,7 @@ async function loadData() {
     }
 }
 
-// 4. 번역 실행 함수 (⭐️⭐️⭐️ 하이브리드 로직으로 대규모 수정 ⭐️⭐️⭐️)
+// 4. 번역 실행 함수 (⭐️⭐️⭐️ 하이브리드 로직 *수정* ⭐️⭐️⭐️)
 async function doTranslate() {
     const query = searchInput.value.trim().toLowerCase();
     const category = categorySelect.value;
@@ -48,8 +46,6 @@ async function doTranslate() {
     // 1. '지도(map)'에서 '리소스 ID'를 찾습니다.
     const langMap = masterDB[category].map[sourceLang];
     const resourceId = langMap ? langMap[query] : undefined;
-    
-    // (e.g., resourceId는 25(숫자) 또는 "static"(문자열) 또는 "probopass-hisuian"(문자열)일 수 있습니다)
 
     if (!resourceId) {
         resultArea.value = '결과 없음';
@@ -68,8 +64,18 @@ async function doTranslate() {
             translation = localEntry[targetLang];
             
             if (!translation && category === 'pokemon' && targetLang === 'dex_id') {
-                translation = localEntry['dex_id'] || '로컬 DB에 dex_id 없음'; // 신규 포켓몬의 도감번호
+                translation = localEntry['dex_id'] || '로컬 DB에 dex_id 없음';
             }
+
+            // ⭐️ ⬇️ ⬇️ ⬇️ (핵심 수정!) ⬇️ ⬇️ ⬇️ ⭐️
+            // 만약 로컬 DB에 원하는 언어(targetLang)가 없다면, API로 폴백(fallback)
+            if (!translation) {
+                // 'character' 카테고리는 API가 없으므로 폴백하면 안 됨
+                if (category !== 'character') { 
+                    translation = await fetchFromApi(resourceId, category, sourceLang, targetLang);
+                }
+            }
+            // ⭐️ ⬆️ ⬆️ ⬆️ (핵심 수정 끝) ⬆️ ⬆️ ⬆️ ⭐️
 
         } else {
             // 2A-2. 로컬 DB에 없는 '문자열' ID -> API 호출 (e.g., "static", "modest")
@@ -91,6 +97,8 @@ async function doTranslate() {
         resultArea.value = '결과 없음 (최종)';
     }
 }
+
+// (API 호출 함수 및 나머지 모든 코드는 이전과 동일합니다)
 
 // (NEW) ⭐️ API 호출 함수 (통합)
 async function fetchFromApi(resourceId, category, sourceLang, targetLang) {
@@ -141,9 +149,6 @@ async function findNameInApiData(apiData, langCode, category) {
     return nameEntry ? nameEntry.name : null;
 }
 
-// (삭제) ⭐️ handleLocalTranslation, handleApiTranslation, findPokemonName 함수 (위 함수로 통합됨)
-
-
 // 5. 버튼에 클릭 이벤트 연결 (동일)
 if (translateButton) {
     translateButton.addEventListener('click', doTranslate);
@@ -175,7 +180,7 @@ function syncLanguages() {
 sourceLangSelect.addEventListener('change', syncLanguages);
 targetLangSelect.addEventListener('change', syncLanguages);
 
-// 9. 언어 교환 (Swap) 로직 (수정됨 - 에러 메시지 업데이트)
+// 9. 언어 교환 (Swap) 로직 (동일)
 swapButton.addEventListener('click', () => {
     const sourceVal = sourceLangSelect.value;
     const targetVal = targetLangSelect.value;
@@ -221,10 +226,9 @@ window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (ev
     if (!savedTheme) { applyTheme(event.matches ? 'dark' : 'light'); }
 });
 
-// 11. 카테고리 변경 감지 로직 (수정됨)
+// 11. 카테고리 변경 감지 로직 (동일)
 function handleCategoryChange() {
     const category = categorySelect.value;
-    // (NEW) 'character' 카테고리도 도감번호를 지원하지 않음
     const isPokemon = (category === 'pokemon');
     const dexOptions = document.querySelectorAll('.pokemon-only-option');
     
