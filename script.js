@@ -32,25 +32,17 @@ async function loadData() {
     }
 }
 
-// 4. 번역 실행 함수 (수정됨)
+// 4. 번역 실행 함수 (동일)
 function doTranslate() {
-    
-    // 4.1. 사용자가 입력한 값
     const query = searchInput.value.trim().toLowerCase();
-    
-    // 4.2. 사용자가 선택한 값
     const category = categorySelect.value;
     const sourceLang = sourceLangSelect.value;
     const targetLang = targetLangSelect.value;
 
-    // 4.2-1. 카테고리 방어 코드
     if (!category) {
         resultArea.value = '카테고리를 먼저 선택하세요.';
         return;
     }
-    
-    // ⬇️ ⬇️ ⬇️ (NEW) 언어 방어 코드 추가 ⬇️ ⬇️ ⬇️
-    // 4.2-2. 언어가 선택되지 않았으면 중단
     if (!sourceLang) {
         resultArea.value = '번역할 언어를 선택하세요.';
         return;
@@ -59,15 +51,12 @@ function doTranslate() {
         resultArea.value = '번역될 언어를 선택하세요.';
         return;
     }
-    // ⬆️ ⬆️ ⬆️ ⬆️ ⬆️ ⬆️ ⬆️ ⬆️ ⬆️ ⬆️ ⬆️ ⬆️ ⬆️ ⬆️ ⬆️
 
-    // 4.3. DB에 해당 카테고리가 없으면 중단
     if (!masterDB[category]) {
         resultArea.value = '카테고리 오류';
         return;
     }
 
-    // (이하 로직은 동일합니다)
     const categoryMap = masterDB[category].map;
     const categoryDB = masterDB[category].db;
     const langMap = categoryMap[sourceLang];
@@ -99,26 +88,20 @@ searchInput.addEventListener('keydown', function(event) {
     }
 });
 
-// 7. 언어 선택창 동기화 함수 (수정됨)
+// 7. 언어 선택창 동기화 함수 (동일)
 function syncLanguages() {
     const sourceVal = sourceLangSelect.value;
     const targetVal = targetLangSelect.value;
 
-    // '번역될' 언어(Target) 목록 업데이트
     for (const option of targetLangSelect.options) {
-        // 1. 값이 있는(placeholder가 아닌) 옵션이고,
-        // 2. 그 값이 sourceVal과 같다면
         if (option.value && option.value === sourceVal) {
             option.disabled = true;
         } else {
-            option.disabled = false; // 다른 모든 옵션은 활성화
+            option.disabled = false;
         }
     }
 
-    // '번역할' 언어(Source) 목록 업데이트
     for (const option of sourceLangSelect.options) {
-        // 1. 값이 있는(placeholder가 아닌) 옵션이고,
-        // 2. 그 값이 targetVal과 같다면
         if (option.value && option.value === targetVal) {
             option.disabled = true;
         } else {
@@ -131,37 +114,54 @@ function syncLanguages() {
 sourceLangSelect.addEventListener('change', syncLanguages);
 targetLangSelect.addEventListener('change', syncLanguages);
 
-// 9. 테마 (라이트/다크 모드) 로직 (동일)
+// ----------------------------------------------------
+// ⬇️ ⬇️ ⬇️ (수정됨) 9. 테마 (라이트/다크 모드) 로직 ⬇️ ⬇️ ⬇️
+// ----------------------------------------------------
+
+// 9-1. 테마 적용 함수
 function applyTheme(theme) {
     if (theme === 'dark') {
         htmlEl.classList.add('dark');
-        themeToggle.textContent = '☀️';
+        themeToggle.textContent = '☀️'; // 다크모드일땐 해 아이콘
     } else {
         htmlEl.classList.remove('dark');
-        themeToggle.textContent = '🌙';
+        themeToggle.textContent = '🌙'; // 라이트모드일땐 달 아이콘
     }
 }
 
+// 9-2. 페이지 로드 시 초기 테마 설정
 function setInitialTheme() {
+    // 1. 로컬 스토리지에 저장된 값 확인 (사용자 수동 선택)
     const savedTheme = localStorage.getItem('theme');
+    
     if (savedTheme) {
         applyTheme(savedTheme);
     } else {
+        // 2. 저장된 값이 없으면 OS 설정(prefers-color-scheme) 확인
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
         applyTheme(prefersDark ? 'dark' : 'light');
     }
 }
 
+// 9-3. 토글 버튼 클릭 이벤트 (사용자 수동 변경)
 themeToggle.addEventListener('click', () => {
     const isDark = htmlEl.classList.contains('dark');
-    if (isDark) {
-        applyTheme('light');
-        localStorage.setItem('theme', 'light');
-    } else {
-        applyTheme('dark');
-        localStorage.setItem('theme', 'dark');
+    const newTheme = isDark ? 'light' : 'dark';
+    applyTheme(newTheme);
+    localStorage.setItem('theme', newTheme); // 사용자의 수동 선택을 저장
+});
+
+// 9-4. (NEW) OS 테마 변경 실시간 감지
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (event) => {
+    // ⚠️ 중요: 사용자가 수동으로 테마를 선택(저장)한 적이 있는지 확인
+    const savedTheme = localStorage.getItem('theme');
+    
+    // 사용자가 수동으로 선택한 값이 없을 때만 OS 설정을 따라감
+    if (!savedTheme) {
+        applyTheme(event.matches ? 'dark' : 'light');
     }
 });
+
 
 // --- 스크립트 시작 시 실행 --- (동일)
 loadData();
