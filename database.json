@@ -2,6 +2,7 @@
     "pokemon": {
         "db": {
             "pikachu": {
+                "dex_id": "25",
                 "ko": "피카츄",
                 "ja": "ピカチュウ",
                 "en": "Pikachu",
@@ -14,6 +15,7 @@
             }
         },
         "map": {
+            "dex_id": { "25": "pikachu" },
             "ko": { "피카츄": "pikachu" },
             "ja": { "ピカチュウ": "pikachu" },
             "en": { "pikachu": "pikachu" },
@@ -28,157 +30,67 @@
     "ability": {
         "db": {
             "static": {
-                "ko": "정전기",
-                "ja": "せいでんき",
-                "en": "Static",
-                "es": "Elec. Estática",
-                "fr": "Statik",
-                "de": "Statik",
-                "it": "Statico",
-                "zh-Hans": "静电",
-                "zh-Hant": "靜電"
+                "ko": "정전기", "ja": "せいでんき", "en": "Static", "es": "Elec. Estática", "fr": "Statik", "de": "Statik", "it": "Statico", "zh-Hans": "静电", "zh-Hant": "靜電"
             }
         },
         "map": {
-            "ko": { "정전기": "static" },
-            "ja": { "せいでんき": "static" },
-            "en": { "static": "static" },
-            "es": { "elec. estática": "static" },
-            "fr": { "statik": "static" },
-            "de": { "statik": "static" },
-            "it": { "statico": "static" },
-            "zh-Hans": { "静电": "static" },
-            "zh-Hant": { "靜電": "static" }
+            "dex_id": {},
+            "ko": { "정전기": "static" }, "ja": { "せいでんき": "static" }, "en": { "static": "static" }, "es": { "elec. estática": "static" }, "fr": { "statik": "static" }, "de": { "statik": "static" }, "it": { "statico": "static" }, "zh-Hans": { "静电": "static" }, "zh-Hant": { "靜電": "static" }
         }
     },
     "move": {
         "db": {
             "thunder-shock": {
-                "ko": "전기쇼크",
-                "ja": "でんきショック",
-                "en": "Thunder Shock",
-                "es": "Impactrueno",
-                "fr": "Éclair",
-                "de": "Donnerschock",
-                "it": "Tuonoshock",
-                "zh-Hans": "电击",
-                "zh-Hant": "電擊"
+                "ko": "전기쇼크", "ja": "でんきショック", "en": "Thunder Shock", "es": "Impactrueno", "fr": "Éclair", "de": "Donnerschock", "it": "Tuonoshock", "zh-Hans": "电击", "zh-Hant": "電擊"
             }
         },
         "map": {
-            "ko": { "전기쇼크": "thunder-shock" },
-            "ja": { "でんきショック": "thunder-shock" },
-            "en": { "thunder shock": "thunder-shock", "thundershock": "thunder-shock" },
-            "es": { "impactrueno": "thunder-shock" },
-            "fr": { "éclair": "thunder-shock" },
-            "de": { "donnerschock": "thunder-shock" },
-            "it": { "tuonoshock": "thunder-shock" },
-            "zh-Hans": { "电击": "thunder-shock" },
-            "zh-Hant": { "電擊": "thunder-shock" }
+            "dex_id": {},
+            "ko": { "전기쇼크": "thunder-shock" }, "ja": { "でんきショック": "thunder-shock" }, "en": { "thunder shock": "thunder-shock", "thundershock": "thunder-shock" }, "es": { "impactrueno": "thunder-shock" }, "fr": { "éclair": "thunder-shock" }, "de": { "donnerschock": "thunder-shock" }, "it": { "tuonoshock": "thunder-shock" }, "zh-Hans": { "电击": "thunder-shock" }, "zh-Hant": { "電擊": "thunder-shock" }
         }
     },
     "item": {
         "db": {
             "master-ball": {
-                "ko": "마스터볼",
-                "ja": "マスターボール",
-                "en": "Master Ball",
-                "es": "Master Ball",
-                "fr": "Master Ball",
-                "de": "Meisterball",
-                "it": "Master Ball",
-                "zh-Hans": "大师球",
-                "zh-Hant": "大師球"
+                "ko": "마스터볼", "ja": "マスターボール", "en": "Master Ball", "es": "Master Ball", "fr": "Master Ball", "de": "Meisterball", "it": "Master Ball", "zh-Hans": "大师球", "zh-Hant": "大師球"
             }
         },
         "map": {
-            "ko": { "마스터볼": "master-ball" },
-            "ja": { "マスターボール": "master-ball" },
-            "en": { "master ball": "master-ball" },
-            "es": { "master ball": "master-ball" },
-            "fr": { "master ball": "master-ball" },
-            "de": { "meisterball": "master-ball" },
-            "it": { "master ball": "master-ball" },
-            "zh-Hans": { "大师球": "master-ball" },
-            "zh-Hant": { "大師球": "master-ball" }
+            "dex_id": {},
+            "ko": { "마스터볼": "master-ball" }, "ja": { "マスターボール": "master-ball" }, "en": { "master ball": "master-ball" }, "es": { "master ball": "master-ball" }, "fr": { "master ball": "master-ball" }, "de": { "meisterball": "master-ball" }, "it": { "master ball": "master-ball" }, "zh-Hans": { "大师球": "master-ball" }, "zh-Hant": { "大師球": "master-ball" }
         }
     },
     "character": {
         "db": {
             "professor-oak": {
-                "ko": "오박사",
-                "ja": "オーキド博士",
-                "en": "Professor Oak",
-                "es": "Prof. Oak",
-                "fr": "Prof. Chen",
-                "de": "Prof. Eich",
-                "it": "Prof. Oak",
-                "zh-Hans": "大木博士",
-                "zh-Hant": "大木博士"
+                "ko": "오박사", "ja": "オーキド博士", "en": "Professor Oak", "es": "Prof. Oak", "fr": "Prof. Chen", "de": "Prof. Eich", "it": "Prof. Oak", "zh-Hans": "大木博士", "zh-Hant": "大木博士"
             }
         },
         "map": {
-            "ko": { "오박사": "professor-oak" },
-            "ja": { "オーキド博士": "professor-oak" },
-            "en": { "professor oak": "professor-oak" },
-            "es": { "prof. oak": "professor-oak" },
-            "fr": { "prof. chen": "professor-oak" },
-            "de": { "prof. eich": "professor-oak" },
-            "it": { "prof. oak": "professor-oak" },
-            "zh-Hans": { "大木博士": "professor-oak" },
-            "zh-Hant": { "大木博士": "professor-oak" }
+            "dex_id": {},
+            "ko": { "오박사": "professor-oak" }, "ja": { "オーキド博士": "professor-oak" }, "en": { "professor oak": "professor-oak" }, "es": { "prof. oak": "professor-oak" }, "fr": { "prof. chen": "professor-oak" }, "de": { "prof. eich": "professor-oak" }, "it": { "prof. oak": "professor-oak" }, "zh-Hans": { "大木博士": "professor-oak" }, "zh-Hant": { "大木博士": "professor-oak" }
         }
     },
     "location": {
         "db": {
             "route-1": {
-                "ko": "1번도로",
-                "ja": "１番道路",
-                "en": "Route 1",
-                "es": "Ruta 1",
-                "fr": "Route 1",
-                "de": "Route 1",
-                "it": "Percorso 1",
-                "zh-Hans": "１号道路",
-                "zh-Hant": "１號道路"
+                "ko": "1번도로", "ja": "１番道路", "en": "Route 1", "es": "Ruta 1", "fr": "Route 1", "de": "Route 1", "it": "Percorso 1", "zh-Hans": "１号道路", "zh-Hant": "１號道路"
             }
         },
         "map": {
-            "ko": { "1번도로": "route-1" },
-            "ja": { "１番道路": "route-1" },
-            "en": { "route 1": "route-1" },
-            "es": { "ruta 1": "route-1" },
-            "fr": { "route 1": "route-1" },
-            "de": { "route 1": "route-1" },
-            "it": { "percorso 1": "route-1" },
-            "zh-Hans": { "１号道路": "route-1" },
-            "zh-Hant": { "１號道路": "route-1" }
+            "dex_id": {},
+            "ko": { "1번도로": "route-1" }, "ja": { "１番道路": "route-1" }, "en": { "route 1": "route-1" }, "es": { "ruta 1": "route-1" }, "fr": { "route 1": "route-1" }, "de": { "route 1": "route-1" }, "it": { "percorso 1": "route-1" }, "zh-Hans": { "１号道路": "route-1" }, "zh-Hant": { "１號道路": "route-1" }
         }
     },
     "nature": {
         "db": {
             "modest": {
-                "ko": "조심",
-                "ja": "ひかえめ",
-                "en": "Modest",
-                "es": "Modesta",
-                "fr": "Modeste",
-                "de": "Mäßig",
-                "it": "Modesta",
-                "zh-Hans": "内敛",
-                "zh-Hant": "內斂"
+                "ko": "조심", "ja": "ひかえめ", "en": "Modest", "es": "Modesta", "fr": "Modeste", "de": "Mäßig", "it": "Modesta", "zh-Hans": "内敛", "zh-Hant": "內斂"
             }
         },
         "map": {
-            "ko": { "조심": "modest" },
-            "ja": { "ひかえめ": "modest" },
-            "en": { "modest": "modest" },
-            "es": { "modesta": "modest" },
-            "fr": { "modeste": "modest" },
-            "de": { "mäßig": "modest" },
-            "it": { "modesta": "modest" },
-            "zh-Hans": { "内敛": "modest" },
-            "zh-Hant": { "內斂": "modest" }
+            "dex_id": {},
+            "ko": { "조심": "modest" }, "ja": { "ひかえめ": "modest" }, "en": { "modest": "modest" }, "es": { "modesta": "modest" }, "fr": { "modeste": "modest" }, "de": { "mäßig": "modest" }, "it": { "modesta": "modest" }, "zh-Hans": { "内敛": "modest" }, "zh-Hant": { "內斂": "modest" }
         }
     }
 }
