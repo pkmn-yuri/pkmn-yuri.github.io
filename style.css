@@ -18,6 +18,7 @@ html, body {
 #themeToggle:hover { transform: scale(1.1); }
 
 /* --- 4. 레이아웃 (수정됨) --- */
+/* (모바일 기본 = 세로 배치) */
 .container {
     width: 100%; height: 100%; max-width: 1000px; padding: 20px; padding-top: 80px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: flex-start;
 }
@@ -43,7 +44,7 @@ html, body {
 .translation-wrapper {
     flex-grow: 1; 
     display: flex;
-    /* ⬇️ ⬇️ ⬇️ (수정) 모바일/데스크톱 모두 세로 배치 ⬇️ ⬇️ ⬇️ */
+    /* ⬇️ ⬇️ ⬇️ (수정) 모바일(기본)은 세로 배치 ⬇️ ⬇️ ⬇️ */
     flex-direction: column; 
     gap: 15px; 
     min-height: 0;
@@ -52,15 +53,13 @@ html, body {
 
 .language-box {
     background-color: var(--box-color); border: 1px solid var(--border-color); border-radius: 12px; padding: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); display: flex; flex-direction: column; 
-    /* ⬇️ ⬇️ ⬇️ (수정) 모바일/데스크톱 모두 100% 너비 ⬇️ ⬇️ ⬇️ */
     width: 100%; 
     gap: 10px; 
     min-height: 0;
-    flex-grow: 1; /* ⬇️ (수정) 박스가 남은 세로 공간을 나눠 가짐 ⬇️ */
+    flex-grow: 1; 
 }
 
 /* 텍스트 입력/결과창 (동일) */
-/* (flex-grow: 1 덕분에 부모(.language-box)의 남은 공간을 꽉 채움) */
 #searchInput, #resultArea {
     width: 100%; height: 100%; flex-grow: 1; padding: 12px; font-size: 1.2em; border: 1px solid var(--border-color); border-radius: 8px; box-sizing: border-box; background-color: var(--input-bg-color); color: var(--text-color); resize: none;
 }
@@ -80,23 +79,54 @@ textarea::placeholder { color: var(--secondary-text); }
     line-height: 1;
     transition: transform 0.2s ease;
     flex-shrink: 0;
-    /* ⬇️ ⬇️ ⬇️ (수정) 회전 각도 0도 (세로 레이아웃) ⬇️ ⬇️ ⬇️ */
-    transform: rotate(0deg); 
+    transform: rotate(0deg); /* ⬇️ (수정) 기본 0도 ⬇️ */
 }
 #swapButton:hover {
-    transform: rotate(180deg); /* ⬇️ (수정) 호버 시 180도 회전 ⬇️ */
+    transform: rotate(180deg);
 }
 
-/* ⬇️ ⬇️ ⬇️ (수정) 번역 버튼 숨기기 ⬇️ ⬇️ ⬇️ */
+/* 번역 버튼 (숨김) (동일) */
 #translateButton {
     display: none; 
 }
 
-/* --- 5. 반응형 레이아웃 (수정) --- */
-/* (이제 모바일과 데스크톱의 레이아웃이 거의 동일하므로, media query가 필요 없습니다) */
-/* (순서 정렬) */
+/* 순서 (모바일 기본) */
 #sourceBox { order: 1; }
 #swapButton { order: 2; }
 #targetBox { order: 3; }
 
-/* (기존 미디어 쿼리 삭제) */
+
+/* --- 5. 반응형 레이아웃 (NEW) --- */
+/* (데스크톱: 769px 이상) */
+@media (min-width: 769px) {
+    .translation-wrapper {
+        /* ⬇️ ⬇️ ⬇️ (NEW) 데스크톱은 가로 배치로 변경 ⬇️ ⬇️ ⬇️ */
+        flex-direction: row;
+        align-items: center; /* 버튼 중앙 정렬 */
+    }
+
+    #swapButton {
+        /* ⬇️ ⬇️ ⬇️ (NEW) 가로 배치에 맞게 버튼 90도 회전 ⬇️ ⬇️ ⬇️ */
+        transform: rotate(90deg);
+    }
+    #swapButton:hover {
+        transform: rotate(270deg); /* 90 + 180 */
+    }
+
+    /* ⬇️ ⬇️ ⬇️ (NEW) 데스크톱 순서 변경 ⬇️ ⬇️ ⬇️ */
+    #sourceBox { order: 1; }
+    #swapButton { order: 2; }
+    #targetBox { order: 3; }
+    
+    .language-box {
+        /* ⬇️ ⬇️ ⬇️ (NEW) 박스가 남은 가로 공간을 나눠 가짐 ⬇️ ⬇️ ⬇️ */
+        width: 100%; /* flex-grow가 있으므로 100%로 설정 */
+        flex-grow: 1;
+        /* ⬇️ (NEW) 세로 높이를 꽉 채움 (글자 칸 문제 해결) ⬇️ */
+        height: 100%; 
+    }
+
+    #searchInput, #resultArea {
+        height: 100%; /* 부모(language-box)의 높이를 따라감 */
+    }
+}
