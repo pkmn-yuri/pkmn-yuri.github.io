@@ -1,0 +1,72 @@
+{
+    "pokemon": {
+        "db": {
+            "pikachu": { "ko": "피카츄", "en": "Pikachu", "ja": "ピカチュウ" }
+        },
+        "map": {
+            "ko": { "피카츄": "pikachu" },
+            "en": { "pikachu": "pikachu" },
+            "ja": { "ピカチュウ": "pikachu" }
+        }
+    },
+    "ability": {
+        "db": {
+            "static": { "ko": "정전기", "en": "Static", "ja": "せいでんき" }
+        },
+        "map": {
+            "ko": { "정전기": "static" },
+            "en": { "static": "static" },
+            "ja": { "せいでんき": "static" }
+        }
+    },
+    "move": {
+        "db": {
+            "thunder-shock": { "ko": "전기쇼크", "en": "Thunder Shock", "ja": "でんきショック" }
+        },
+        "map": {
+            "ko": { "전기쇼크": "thunder-shock" },
+            "en": { "thunder shock": "thunder-shock", "thundershock": "thunder-shock" },
+            "ja": { "でんきショック": "thunder-shock" }
+        }
+    },
+    "item": {
+        "db": {
+            "master-ball": { "ko": "마스터볼", "en": "Master Ball", "ja": "マスターボール" }
+        },
+        "map": {
+            "ko": { "마스터볼": "master-ball" },
+            "en": { "master ball": "master-ball" },
+            "ja": { "マスターボール": "master-ball" }
+        }
+    },
+    "character": {
+        "db": {
+            "professor-oak": { "ko": "오박사", "en": "Professor Oak", "ja": "オーキド博士" }
+        },
+        "map": {
+            "ko": { "오박사": "professor-oak" },
+            "en": { "professor oak": "professor-oak" },
+            "ja": { "オーキド博士": "professor-oak" }
+        }
+    },
+    "location": {
+        "db": {
+            "pallet-town": { "ko": "태초마을", "en": "Pallet Town", "ja": "マサラタウン" }
+        },
+        "map": {
+            "ko": { "태초마을": "pallet-town" },
+            "en": { "pallet town": "pallet-town" },
+            "ja": { "マサラタウン": "pallet-town" }
+        }
+    },
+    "nature": {
+        "db": {
+            "modest": { "ko": "조심", "en": "Modest", "ja": "ひかえめ" }
+        },
+        "map": {
+            "ko": { "조심": "modest" },
+            "en": { "modest": "modest" },
+            "ja": { "ひかえめ": "modest" }
+        }
+    }
+}
