@@ -1,0 +1,128 @@
+/* --- 기본 설정 --- */
+:root {
+    --bg-color: #f0f0f0;
+    --box-color: #ffffff;
+    --border-color: #cccccc;
+    --text-color: #333333;
+    --primary-color: #3B82F6; /* 파란색 */
+}
+
+/* --- 화면 꽉 채우기 --- */
+html, body {
+    height: 100%;
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.container {
+    width: 100%;
+    height: 100%;
+    max-width: 1000px; /* 최대 너비 제한 */
+    padding: 20px;
+    box-sizing: border-box; /* 패딩이 너비를 초과하지 않도록 */
+    display: flex;
+    flex-direction: column;
+}
+
+/* --- 카테고리 헤더 --- */
+.category-header {
+    margin-bottom: 20px;
+    text-align: center;
+}
+.category-header h1 {
+    margin: 0 0 10px 0;
+}
+#categorySelect {
+    width: 100%;
+    padding: 12px;
+    font-size: 1.1em;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+/* --- 번역기 본체 --- */
+.translation-wrapper {
+    flex-grow: 1; /* 남은 공간을 모두 차지 */
+    display: flex;
+    gap: 15px;
+}
+
+.language-box {
+    background-color: var(--box-color);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 15px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    display: flex;
+    flex-direction: column;
+    width: 100%; /* 너비 100% (모바일에서 중요) */
+}
+#sourceLang, #targetLang {
+    width: 100%;
+    padding: 10px;
+    font-size: 1em;
+    margin-bottom: 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+#searchInput, #resultArea {
+    width: 100%;
+    height: 100%; /* 남은 공간 모두 차지 */
+    flex-grow: 1;
+    padding: 12px;
+    font-size: 1.2em;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-sizing: border-box; /* 패딩 포함 */
+}
+#resultArea {
+    background-color: #f9f9f9;
+}
+
+#translateButton {
+    padding: 15px;
+    font-size: 1.2em;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: bold;
+}
+#translateButton:hover {
+    background-color: #2563EB;
+}
+
+
+/* ------------------------------------------- */
+/* --- 반응형 레이아웃 (사용자 요청 기준) --- */
+/* ------------------------------------------- */
+
+/* 1. 모바일 (기본: 가로 배치, Side-by-side) */
+.translation-wrapper {
+    flex-direction: row; /* 가로 배치 */
+    align-items: stretch; /* 높이를 꽉 채움 */
+}
+#translateButton {
+    writing-mode: vertical-rl; /* 버튼 텍스트 세로로 */
+    transform: rotate(180deg); /* 글자 바로 세우기 */
+    display: none; /* 모바일에서는 버튼 숨기기 (엔터로 검색) */
+}
+
+/* 2. 데스크톱 (769px 이상: 세로 배치, Top-down) */
+@media (min-width: 769px) {
+    .translation-wrapper {
+        flex-direction: column; /* 세로 배치 */
+    }
+    #translateButton {
+        width: 100%;
+        writing-mode: horizontal-tb; /* 버튼 텍스트 가로로 */
+        transform: none; /* 회전 리셋 */
+        display: block; /* 데스크톱에서 버튼 보이기 */
+    }
+}
