@@ -13,8 +13,9 @@
     <div class="container">
 
         <div class="category-header">
-            <h1>카테고리 선택</h1>
+            <h1>포켓몬 번역기</h1>
             <select id="categorySelect">
+                <option value="" disabled selected hidden>카테고리 선택</option>
                 <option value="pokemon">포켓몬</option>
                 <option value="ability">특성</option>
                 <option value="move">기술</option>
@@ -29,6 +30,7 @@
 
             <div class="language-box" id="sourceBox">
                 <select id="sourceLang">
+                    <option value="" disabled selected hidden>언어 선택</option>
                     <option value="ko">한국어</option>
                     <option value="en">English</option>
                     <option value="ja">日本語</option>
@@ -40,8 +42,9 @@
 
             <div class="language-box" id="targetBox">
                 <select id="targetLang">
+                    <option value="" disabled selected hidden>언어 선택</option>
                     <option value="ko">한국어</option>
-                    <option value="en" selected>English</option>
+                    <option value="en">English</option>
                     <option value="ja">日本語</option>
                 </select>
                 <textarea id="resultArea" readonly placeholder="번역 결과..."></textarea>
