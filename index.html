@@ -1,35 +1,51 @@
 <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>포켓몬 번역기</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <h1>포켓몬 번역기 (v2)</h1>
-    
-    <div>
-        <select id="sourceLang">
-            <option value="ko">한국어</option>
-            <option value="en">English</option>
-            <option value="ja">日本語</option>
-        </select>
-        <input type="text" id="searchInput" placeholder="포켓몬 이름 입력">
-    </div>
+    <div class="container">
 
-    <br>
-    <button id="translateButton">⬇️ 번역 ⬇️</button>
-    <br><br>
+        <div class="category-header">
+            <h1>카테고리 선택</h1>
+            <select id="categorySelect">
+                <option value="pokemon">포켓몬</option>
+                <option value="ability">특성</option>
+                <option value="move">기술</option>
+                <option value="item">도구</option>
+                <option value="character">인물</option>
+                <option value="location">장소</option>
+                <option value="nature">성격</option>
+            </select>
+        </div>
 
-    <div>
-        <select id="targetLang">
-            <option value="ko">한국어</option>
-            <option value="en" selected>English</option> <option value="ja">日本語</option>
-        </select>
-        <input type="text" id="resultArea" readonly placeholder="번역 결과">
-    </div>
+        <div class="translation-wrapper">
 
-    <script src="script.js"></script>
+            <div class="language-box" id="sourceBox">
+                <select id="sourceLang">
+                    <option value="ko">한국어</option>
+                    <option value="en">English</option>
+                    <option value="ja">日本語</option>
+                </select>
+                <textarea id="searchInput" placeholder="번역할 이름 입력... (Enter로 검색)"></textarea>
+            </div>
+
+            <button id="translateButton">⬇️ 번역하기 ⬇️</button>
+
+            <div class="language-box" id="targetBox">
+                <select id="targetLang">
+                    <option value="ko">한국어</option>
+                    <option value="en" selected>English</option>
+                    <option value="ja">日本語</option>
+                </select>
+                <textarea id="resultArea" readonly placeholder="번역 결과..."></textarea>
+            </div>
+
+        </div> </div> <script src="script.js"></script>
 </body>
 </html>
