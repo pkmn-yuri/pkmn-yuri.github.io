@@ -1,21 +1,17 @@
 {
     "이상해씨": "bulbasaur",
-    "bulbasaur": "bulbasaur",
-    "Bulbasaur": "bulbasaur",
+    "bulbasaur": "bulbasaur", 
     "フシギダネ": "bulbasaur",
     
     "파이리": "charmander",
     "charmander": "charmander",
-    "Charmander": "charmander",
     "ヒトカゲ": "charmander",
     
     "꼬부기": "squirtle",
     "squirtle": "squirtle",
-    "Squirtle": "squirtle",
-    "ゼニガメ": "squirtle",
+    "ゼニカメ": "squirtle",
     
     "피카츄": "pikachu",
     "pikachu": "pikachu",
-    "Pikachu": "pikachu",
     "ピカチュウ": "pikachu"
 }
