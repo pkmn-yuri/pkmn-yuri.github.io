@@ -29,24 +29,27 @@
         <div class="translation-wrapper">
 
             <div class="language-box" id="sourceBox">
-                <select id="sourceLang">
-                    <option value="" disabled selected hidden>언어 선택</option>
-                    <option value="ko">한국어</option>
-                    <option value="en">English</option>
-                    <option value="ja">日本語</option>
-                </select>
+                <div class="language-select-wrapper">
+                    <select id="sourceLang">
+                        <option value="" disabled selected hidden>언어 선택</option>
+                        <option value="ko">한국어</option>
+                        <option value="en">English</option>
+                        <option value="ja">日本語</option>
+                    </select>
+                    <button id="swapButton" title="언어 교환">🔁</button>
+                    <select id="targetLang">
+                        <option value="" disabled selected hidden>언어 선택</option>
+                        <option value="ko">한국어</option>
+                        <option value="en">English</option>
+                        <option value="ja">日本語</option>
+                    </select>
+                </div>
                 <textarea id="searchInput" placeholder="번역할 이름 입력... (Enter로 검색)"></textarea>
             </div>
 
             <button id="translateButton">⬇️ 번역하기 ⬇️</button>
 
             <div class="language-box" id="targetBox">
-                <select id="targetLang">
-                    <option value="" disabled selected hidden>언어 선택</option>
-                    <option value="ko">한국어</option>
-                    <option value="en">English</option>
-                    <option value="ja">日本語</option>
-                </select>
                 <textarea id="resultArea" readonly placeholder="번역 결과..."></textarea>
             </div>
 
