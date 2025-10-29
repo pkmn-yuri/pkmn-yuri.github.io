@@ -1,7 +1,9 @@
 {
     "pokemon": {
         "db": {
-            "pikachu": { "dex_id": "25" }
+            "pikachu": {
+                "dex_id": "25"
+            }
         },
         "map": {
   "dex_id": {
@@ -10274,7 +10276,8 @@
     "太樂巴戈斯": 1024,
     "桃歹郎": 1025
   }
-},
+}
+    },
     "ability": {
         "db": {
             "static": { "ko": "정전기", "ja": "せいでんき", "en": "Static", "es": "Elec. Estática", "fr": "Statik", "de": "Statik", "it": "Statico", "zh-Hans": "静电", "zh-Hant": "靜電" }
