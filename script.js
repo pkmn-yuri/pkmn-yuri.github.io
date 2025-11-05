@@ -90,7 +90,7 @@ async function doTranslate() {
 // (API 호출 함수 및 기타 함수는 이전과 동일)
 // ... (fetchFromApi, findNameInApiData) ...
 
-// ⬇️ ⬇️ ⬇️ (NEW) ⭐️⭐️⭐️ 일본어 자동 음차 함수 (모아쓰기 적용됨) ⭐️⭐️⭐️ ⬇️ ⬇️ ⬇️
+// ⬇️ ⬇️ ⬇️ (NEW) ⭐️⭐️⭐️ 일본어 자동 음차 함수 (맵 수정됨) ⭐️⭐️⭐️ ⬇️ ⬇️ ⬇️
 function transliterateJapanese(text) {
     if (!text) return null;
 
@@ -100,7 +100,7 @@ function transliterateJapanese(text) {
     const FINAL_N = 4; // 'ㄴ' 받침
     const FINAL_S = 19; // 'ㅅ' 받침
 
-    // 2. 단순 규칙 매핑 (⭐️ 작은 모음 수정됨)
+    // 2. 단순 규칙 매핑 (⭐️ 수정됨)
     const map = {
         'ア':'아', 'イ':'이', 'ウ':'우', 'エ':'에', 'オ':'오',
         'カ':'카', 'キ':'키', 'ク':'쿠', 'ケ':'케', 'コ':'코',
@@ -117,21 +117,23 @@ function transliterateJapanese(text) {
         'ダ':'다', 'ヂ':'지', 'ヅ':'즈', 'デ':'데', 'ド':'도',
         'バ':'바', 'ビ':'비', 'ブ':'부', 'ベ':'베', '보':'보',
         'パ':'파', 'ピ':'피', 'プ':'푸', 'ペ':'페', 'ポ':'포',
+        // ⭐️ ⬇️ ⬇️ ⬇️ (핵심 수정!) ⬇️ ⬇️ ⬇️ ⭐️
+        'ファ':'화', 'フィ':'휘', 'フェ':'훼', 'フォ':'훠',
         'キャ':'캬', 'キュ':'큐', 'キョ':'쿄',
-        'シャ':'샤', 'シュ':'슈', 'ショ':'쇼',
-        'チャ':'챠', 'チュ':'츄', 'チョ':'쵸',
+        'シャ':'샤', 'シュ':'슈', 'ショ':'쇼', 'シェ':'셰',
+        'チャ':'챠', 'チュ':'츄', 'チョ':'쵸', 'チェ':'체',
         'ニャ':'냐', 'ニュ':'뉴', 'ニョ':'뇨',
         'ヒャ':'햐', 'ヒュ':'휴', 'ヒョ':'효',
         'ミャ':'먀', 'ミュ':'뮤', 'ミョ':'묘',
         'リャ':'랴', 'リュ':'류', 'リョ':'료',
         'ギャ':'갸', 'ギュ':'규', 'ギョ':'교',
-        'ジャ':'쟈', 'ジュ':'쥬', 'ジョ':'죠',
+        'ジャ':'쟈', 'ジュ':'쥬', 'ジョ':'죠', 'ジェ':'제',
         'ビャ':'뱌', 'ビュ':'뷰', 'ビョ':'뵤',
         'ピャ':'퍄', 'ピュ':'퓨', 'ピョ':'표',
         'ヴァ':'바', 'ヴィ':'비', 'ヴェ':'베', 'ヴォ':'보', 'ティ':'티', 'ディ':'디', 'デュ':'듀',
-        // ⭐️ ⬇️ ⬇️ ⬇️ (핵심 수정!) ⬇️ ⬇️ ⬇️ ⭐️
         'ァ':'아', 'ィ':'이', 'ゥ':'우', 'ェ':'에', 'ォ':'오',
-        'ャ':'야', 'ュ':'유', 'ョ':'요' // ⭐️(참고: ㅑ, ㅠ, ㅛ는 복합문자(e.g., キャ)가 아닌 단독으로 쓰일 때)
+        'ャ':'야', 'ュ':'유', 'ョ':'요'
+        // ⭐️ ⬆️ ⬆️ ⬆️ (핵심 수정 끝) ⬆️ ⬆️ ⬆️ ⭐️
     };
 
     let result = '';
@@ -151,40 +153,32 @@ function transliterateJapanese(text) {
             i += 1;
             lastCharWasLongVowel = false;
         
-        // ⭐️ ⬇️ (수정) ン (N) 처리 ⬇️ ⭐️
+        // ン (N) 처리
         } else if (char === 'ン') {
             let batchim = (lastCharWasLongVowel) ? '응' : 'ㄴ';
-            
-            // 1. 'ㄴ' 받침이고,
-            // 2. 결과값이 비어있지 않고,
-            // 3. 마지막 글자가 받침 없는 한글일 경우
             if (batchim === 'ㄴ' && result.length > 0) {
                 let lastCharCode = result.charCodeAt(result.length - 1);
                 if (lastCharCode >= HANGUL_START && lastCharCode <= HANGUL_END && (lastCharCode - HANGUL_START) % 28 === 0) {
                     let newCharCode = lastCharCode + FINAL_N; // 'ㄴ' 받침 추가
-                    result = result.slice(0, -1) + String.fromCharCode(newCharCode); // 마지막 글자 교체
+                    result = result.slice(0, -1) + String.fromCharCode(newCharCode);
                     lastCharWasLongVowel = false;
-                    continue; // (중요) 다음 루프로 넘어감
+                    continue; 
                 }
             }
-            // 조합 실패 시 (e.g., 장음 뒤 '응', 마지막 글자가 한글 아님)
             result += batchim;
             lastCharWasLongVowel = false;
         
-        // ⭐️ ⬇️ (수정) ッ (촉음) 처리 ⬇️ ⭐️
+        // ッ (촉음) 처리
         } else if (char === 'ッ') {
-            // 1. 결과값이 비어있지 않고,
-            // 2. 마지막 글자가 받침 없는 한글일 경우
             if (result.length > 0) {
                 let lastCharCode = result.charCodeAt(result.length - 1);
                 if (lastCharCode >= HANGUL_START && lastCharCode <= HANGUL_END && (lastCharCode - HANGUL_START) % 28 === 0) {
                     let newCharCode = lastCharCode + FINAL_S; // 'ㅅ' 받침 추가
-                    result = result.slice(0, -1) + String.fromCharCode(newCharCode); // 마지막 글자 교체
+                    result = result.slice(0, -1) + String.fromCharCode(newCharCode);
                     lastCharWasLongVowel = false;
-                    continue; // (중요) 다음 루프로 넘어감
+                    continue;
                 }
             }
-            // 조합 실패 시
             result += 'ㅅ';
             lastCharWasLongVowel = false;
             
