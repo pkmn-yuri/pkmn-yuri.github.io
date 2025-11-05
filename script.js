@@ -32,64 +32,47 @@ async function loadData() {
 
 // 4. 번역 실행 함수 (동일)
 async function doTranslate() {
+    // ... (이전 코드와 동일) ...
     const query = searchInput.value.trim().toLowerCase();
     const category = categorySelect.value;
     const sourceLang = sourceLangSelect.value;
     const targetLang = targetLangSelect.value;
-
     if (!category) { resultArea.value = '카테고리를 먼저 선택하세요.'; return; }
     if (!sourceLang) { resultArea.value = '번역할 언어를 선택하세요.'; return; }
     if (!targetLang) { resultArea.value = '번역될 언어를 선택하세요.'; return; }
     if (!masterDB[category]) { resultArea.value = '카테고리 오류'; return; }
-
     const langMap = masterDB[category].map[sourceLang];
     const resourceId = langMap ? langMap[query] : undefined;
-
-    if (!resourceId) {
-        resultArea.value = '결과 없음';
-        return;
-    }
-
+    if (!resourceId) { resultArea.value = '결과 없음'; return; }
     let translation;
     let reading = null; 
     let japaneseText = null; 
-    
     if (typeof resourceId === 'string') {
         const localEntry = masterDB[category].db[resourceId];
-        
         if (localEntry) {
             translation = localEntry[targetLang];
-            
             if (targetLang === 'ja' && category === 'pokemon') {
                 japaneseText = localEntry['ja'];
-                if (localEntry['ja_reading_ko']) {
-                    reading = localEntry['ja_reading_ko'];
-                }
+                if (localEntry['ja_reading_ko']) { reading = localEntry['ja_reading_ko']; }
             }
-            
             if (!translation && category === 'pokemon' && targetLang === 'dex_id') {
                 translation = localEntry['dex_id'] || '로컬 DB에 dex_id 없음';
             }
-
             if (!translation && category !== 'character') { 
                 translation = await fetchFromApi(resourceId, category, sourceLang, targetLang);
                 if (targetLang === 'ja' && category === 'pokemon') japaneseText = translation;
                 reading = null;
             }
-
         } else {
             translation = await fetchFromApi(resourceId, category, sourceLang, targetLang);
             if (targetLang === 'ja' && category === 'pokemon') japaneseText = translation;
         }
-    
     } else if (typeof resourceId === 'number') {
         translation = await fetchFromApi(resourceId, category, sourceLang, targetLang);
         if (targetLang === 'ja' && category === 'pokemon') japaneseText = translation;
-    
     } else {
         translation = '유효하지 않은 ID';
     }
-
     if (translation) {
         if (targetLang === 'ja' && category === 'pokemon') {
             if (!reading && japaneseText) {
@@ -104,44 +87,20 @@ async function doTranslate() {
     }
 }
 
-// (API 호출 함수 및 나머지 모든 코드는 이전과 동일합니다)
-async function fetchFromApi(resourceId, category, sourceLang, targetLang) {
-    if (category === 'pokemon' && targetLang === 'dex_id') { return resourceId.toString(); }
-    if (category === 'pokemon' && sourceLang === 'dex_id') {
-         const apiData = { id: resourceId };
-         return await findNameInApiData(apiData, targetLang, category);
-    }
-    resultArea.value = 'API 검색 중...';
-    try {
-        const endpoint = category === 'pokemon' ? 'pokemon-species' : category;
-        const response = await fetch(`https://pokeapi.co/api/v2/${endpoint}/${resourceId}`);
-        if (!response.ok) { throw new Error('API 응답 실패'); }
-        const apiData = await response.json();
-        return await findNameInApiData(apiData, targetLang, category);
-    } catch (error) {
-        console.error('API 호출 오류:', error);
-        return '오류: API 연결 실패';
-    }
-}
-async function findNameInApiData(apiData, langCode, category) {
-    if (langCode === 'dex_id' && category === 'pokemon') {
-         if (apiData.id) return apiData.id.toString();
-         const response = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${apiData.name}`);
-         const speciesData = await response.json();
-         return speciesData.id.toString();
-    }
-    const apiLangMap = { "ko":"ko", "ja":"ja-Hrkt", "en":"en", "es":"es", "fr":"fr", "de":"de", "it":"it", "zh-Hans":"zh-Hans", "zh-Hant":"zh-Hant" };
-    const apiLang = apiLangMap[langCode];
-    if (!apiLang) return null;
-    if (apiData.id && !apiData.names) {
-        const response = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${apiData.id}`);
-        apiData = await response.json();
-    }
-    const nameEntry = apiData.names.find(name => name.language.name === apiLang);
-    return nameEntry ? nameEntry.name : null;
-}
+// (API 호출 함수 및 기타 함수는 이전과 동일)
+// ... (fetchFromApi, findNameInApiData) ...
+
+// ⬇️ ⬇️ ⬇️ (NEW) ⭐️⭐️⭐️ 일본어 자동 음차 함수 (모아쓰기 적용됨) ⭐️⭐️⭐️ ⬇️ ⬇️ ⬇️
 function transliterateJapanese(text) {
     if (!text) return null;
+
+    // 1. 한글 유니코드 상수
+    const HANGUL_START = 0xAC00; // '가'
+    const HANGUL_END = 0xD7A3;   // '힣'
+    const FINAL_N = 4; // 'ㄴ' 받침
+    const FINAL_S = 19; // 'ㅅ' 받침
+
+    // 2. 단순 규칙 매핑
     const map = {
         'ア':'아', 'イ':'이', 'ウ':'우', 'エ':'에', 'オ':'오',
         'カ':'카', 'キ':'키', 'ク':'쿠', 'ケ':'케', 'コ':'코',
@@ -173,128 +132,94 @@ function transliterateJapanese(text) {
         'ァ':'ㅏ', 'ィ':'ㅣ', 'ゥ':'ㅜ', 'ェ':'ㅔ', 'ォ':'ㅗ',
         'ャ':'ㅑ', 'ュ':'ㅠ', 'ョ':'ㅛ'
     };
+
     let result = '';
     let lastCharWasLongVowel = false;
+
     for (let i = 0; i < text.length; i++) {
         let char = text[i];
+        
+        // 3글자 복합
         if (i + 2 < text.length && map[text.substring(i, i + 3)]) {
-            result += map[text.substring(i, i + 3)]; i += 2; lastCharWasLongVowel = false;
-        } else if (i + 1 < text.length && map[text.substring(i, i + 2)]) {
-            result += map[text.substring(i, i + 2)]; i += 1; lastCharWasLongVowel = false;
-        } else if (char === 'ン') {
-            if (lastCharWasLongVowel) { result += '응'; } else { result += 'ㄴ'; }
+            result += map[text.substring(i, i + 3)];
+            i += 2;
             lastCharWasLongVowel = false;
+        // 2글자 복합
+        } else if (i + 1 < text.length && map[text.substring(i, i + 2)]) {
+            result += map[text.substring(i, i + 2)];
+            i += 1;
+            lastCharWasLongVowel = false;
+        
+        // ⭐️ ⬇️ (수정) ン (N) 처리 ⬇️ ⭐️
+        } else if (char === 'ン') {
+            let batchim = (lastCharWasLongVowel) ? '응' : 'ㄴ';
+            
+            // 1. 'ㄴ' 받침이고,
+            // 2. 결과값이 비어있지 않고,
+            // 3. 마지막 글자가 받침 없는 한글일 경우
+            if (batchim === 'ㄴ' && result.length > 0) {
+                let lastCharCode = result.charCodeAt(result.length - 1);
+                if (lastCharCode >= HANGUL_START && lastCharCode <= HANGUL_END && (lastCharCode - HANGUL_START) % 28 === 0) {
+                    let newCharCode = lastCharCode + FINAL_N; // 'ㄴ' 받침 추가
+                    result = result.slice(0, -1) + String.fromCharCode(newCharCode); // 마지막 글자 교체
+                    lastCharWasLongVowel = false;
+                    continue; // (중요) 다음 루프로 넘어감
+                }
+            }
+            // 조합 실패 시 (e.g., 장음 뒤 '응', 마지막 글자가 한글 아님)
+            result += batchim;
+            lastCharWasLongVowel = false;
+        
+        // ⭐️ ⬇️ (수정) ッ (촉음) 처리 ⬇️ ⭐️
         } else if (char === 'ッ') {
-            result += 'ㅅ'; lastCharWasLongVowel = false;
+            // 1. 결과값이 비어있지 않고,
+            // 2. 마지막 글자가 받침 없는 한글일 경우
+            if (result.length > 0) {
+                let lastCharCode = result.charCodeAt(result.length - 1);
+                if (lastCharCode >= HANGUL_START && lastCharCode <= HANGUL_END && (lastCharCode - HANGUL_START) % 28 === 0) {
+                    let newCharCode = lastCharCode + FINAL_S; // 'ㅅ' 받침 추가
+                    result = result.slice(0, -1) + String.fromCharCode(newCharCode); // 마지막 글자 교체
+                    lastCharWasLongVowel = false;
+                    continue; // (중요) 다음 루프로 넘어감
+                }
+            }
+            // 조합 실패 시
+            result += 'ㅅ';
+            lastCharWasLongVowel = false;
+            
+        // ー (장음) 처리
         } else if (char === 'ー') {
-            result += '-'; lastCharWasLongVowel = true;
+            result += '-';
+            lastCharWasLongVowel = true;
+        // 1글자 처리
         } else if (map[char]) {
-            result += map[char]; lastCharWasLongVowel = false;
+            result += map[char];
+            lastCharWasLongVowel = false;
+        // 맵에 없는 글자
         } else {
-            result += char; lastCharWasLongVowel = false;
+            result += char;
+            lastCharWasLongVowel = false;
         }
     }
     return result;
 }
-if (translateButton) {
-    translateButton.addEventListener('click', doTranslate);
-}
-searchInput.addEventListener('keydown', function(event) {
-    if (event.key === 'Enter' && !event.shiftKey) {
-        event.preventDefault();
-        doTranslate();
-    }
-});
-function syncLanguages() {
-    const sourceVal = sourceLangSelect.value;
-    const targetVal = targetLangSelect.value;
-    for (const option of targetLangSelect.options) {
-        if (option.value && option.value === sourceVal) option.disabled = true;
-        else option.disabled = false;
-    }
-    for (const option of sourceLangSelect.options) {
-        if (option.value && option.value === targetVal) option.disabled = true;
-        else option.disabled = false;
-    }
-}
-sourceLangSelect.addEventListener('change', syncLanguages);
-targetLangSelect.addEventListener('change', syncLanguages);
 
-// 9. 언어 교환 (Swap) 로직 (⭐️⭐️⭐️ 수정됨 ⭐️⭐️⭐️)
-swapButton.addEventListener('click', () => {
-    const sourceVal = sourceLangSelect.value;
-    const targetVal = targetLangSelect.value;
-    
-    sourceLangSelect.value = targetVal;
-    targetLangSelect.value = sourceVal;
 
-    const sourceText = searchInput.value;
-    let resultText = resultArea.value; // 'let'으로 변경
-    
-    const isErrorOrPlaceholder = [
-        '결과 없음', '카테고리 오류', '해당 언어 데이터 없음', 'API 검색 중...', '오류: API 연결 실패', 
-        '해당 언어 데이터 없음 (API)', '카테고리를 먼저 선택하세요.', '번역할 언어를 선택하세요.', '번역될 언어를 선택하세요.',
-        '이 카테고리는 도감번호를 지원하지 않습니다.', '결과 없음 (최종)', '유효하지 않은 ID',
-        '로컬 DB에 dex_id 없음'
-    ].includes(resultText.trim());
-
-    if (!isErrorOrPlaceholder && resultText.trim() !== '') {
-        
-        // ⭐️ ⬇️ ⬇️ ⬇️ (핵심 수정!) 괄호 발음 제거 ⬇️ ⬇️ ⬇️
-        // e.g., "ピカチュウ (피카츄)" -> "ピカチュウ"
-        if (resultText.includes(' (')) {
-            resultText = resultText.split(' (')[0];
-        }
-        // ⭐️ ⬆️ ⬆️ ⬆️ (핵심 수정 끝) ⬆️ ⬆️ ⬆️
-
-        searchInput.value = resultText; // 괄호가 제거된 텍스트
-        resultArea.value = sourceText;
-    } else {
-        resultArea.value = '';
-    }
-    syncLanguages();
-});
-
-// 10. 테마 (라이트/다크 모드) 로직 (동일)
-function applyTheme(theme) {
-    if (theme === 'dark') { htmlEl.classList.add('dark'); themeToggle.textContent = '☀️'; }
-    else { htmlEl.classList.remove('dark'); themeToggle.textContent = '🌙'; }
-}
-function setInitialTheme() {
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme) { applyTheme(savedTheme); }
-    else { const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches; applyTheme(prefersDark ? 'dark' : 'light'); }
-}
-themeToggle.addEventListener('click', () => {
-    const isDark = htmlEl.classList.contains('dark');
-    const newTheme = isDark ? 'light' : 'dark';
-    applyTheme(newTheme);
-    localStorage.setItem('theme', newTheme);
-});
-window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (event) => {
-    const savedTheme = localStorage.getItem('theme');
-    if (!savedTheme) { applyTheme(event.matches ? 'dark' : 'light'); }
-});
-
-// 11. 카테고리 변경 감지 로직 (동일)
-function handleCategoryChange() {
-    const category = categorySelect.value;
-    const isPokemon = (category === 'pokemon');
-    const dexOptions = document.querySelectorAll('.pokemon-only-option');
-    dexOptions.forEach(option => {
-        option.hidden = !isPokemon;
-    });
-    if (!isPokemon) {
-        if (sourceLangSelect.value === 'dex_id') sourceLangSelect.value = "";
-        if (targetLangSelect.value === 'dex_id') targetLangSelect.value = "";
-    }
-    syncLanguages();
-}
-
-// 12. 카테고리 선택창에 이벤트 리스너 추가 (동일)
+// (기존 코드들)
+// (fetchFromApi, findNameInApiData, syncLanguages, swapButton, theme logic, category change logic)
+async function fetchFromApi(resourceId, category, sourceLang, targetLang) { if (category === 'pokemon' && targetLang === 'dex_id') { return resourceId.toString(); } if (category === 'pokemon' && sourceLang === 'dex_id') { const apiData = { id: resourceId }; return await findNameInApiData(apiData, targetLang, category); } resultArea.value = 'API 검색 중...'; try { const endpoint = category === 'pokemon' ? 'pokemon-species' : category; const response = await fetch(`https://pokeapi.co/api/v2/${endpoint}/${resourceId}`); if (!response.ok) { throw new Error('API 응답 실패'); } const apiData = await response.json(); return await findNameInApiData(apiData, targetLang, category); } catch (error) { console.error('API 호출 오류:', error); return '오류: API 연결 실패'; } }
+async function findNameInApiData(apiData, langCode, category) { if (langCode === 'dex_id' && category === 'pokemon') { if (apiData.id) return apiData.id.toString(); const response = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${apiData.name}`); const speciesData = await response.json(); return speciesData.id.toString(); } const apiLangMap = { "ko":"ko", "ja":"ja-Hrkt", "en":"en", "es":"es", "fr":"fr", "de":"de", "it":"it", "zh-Hans":"zh-Hans", "zh-Hant":"zh-Hant" }; const apiLang = apiLangMap[langCode]; if (!apiLang) return null; if (apiData.id && !apiData.names) { const response = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${apiData.id}`); apiData = await response.json(); } const nameEntry = apiData.names.find(name => name.language.name === apiLang); return nameEntry ? nameEntry.name : null; }
+if (translateButton) { translateButton.addEventListener('click', doTranslate); }
+searchInput.addEventListener('keydown', function(event) { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); doTranslate(); } });
+function syncLanguages() { const sourceVal = sourceLangSelect.value; const targetVal = targetLangSelect.value; for (const option of targetLangSelect.options) { if (option.value && option.value === sourceVal) option.disabled = true; else option.disabled = false; } for (const option of sourceLangSelect.options) { if (option.value && option.value === targetVal) option.disabled = true; else option.disabled = false; } }
+sourceLangSelect.addEventListener('change', syncLanguages); targetLangSelect.addEventListener('change', syncLanguages);
+swapButton.addEventListener('click', () => { const sourceVal = sourceLangSelect.value; const targetVal = targetLangSelect.value; sourceLangSelect.value = targetVal; targetLangSelect.value = sourceVal; const sourceText = searchInput.value; let resultText = resultArea.value; const isErrorOrPlaceholder = ['결과 없음', '카테고리 오류', '해당 언어 데이터 없음', 'API 검색 중...', '오류: API 연결 실패', '해당 언어 데이터 없음 (API)', '카테고리를 먼저 선택하세요.', '번역할 언어를 선택하세요.', '번역될 언어를 선택하세요.', '이 카테고리는 도감번호를 지원하지 않습니다.', '결과 없음 (최종)', '유효하지 않은 ID', '로컬 DB에 dex_id 없음'].includes(resultText.trim()); if (!isErrorOrPlaceholder && resultText.trim() !== '') { if (resultText.includes(' (')) { resultText = resultText.split(' (')[0]; } searchInput.value = resultText; resultArea.value = sourceText; } else { resultArea.value = ''; } syncLanguages(); });
+function applyTheme(theme) { if (theme === 'dark') { htmlEl.classList.add('dark'); themeToggle.textContent = '☀️'; } else { htmlEl.classList.remove('dark'); themeToggle.textContent = '🌙'; } }
+function setInitialTheme() { const savedTheme = localStorage.getItem('theme'); if (savedTheme) { applyTheme(savedTheme); } else { const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches; applyTheme(prefersDark ? 'dark' : 'light'); } }
+themeToggle.addEventListener('click', () => { const isDark = htmlEl.classList.contains('dark'); const newTheme = isDark ? 'light' : 'dark'; applyTheme(newTheme); localStorage.setItem('theme', newTheme); });
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (event) => { const savedTheme = localStorage.getItem('theme'); if (!savedTheme) { applyTheme(event.matches ? 'dark' : 'light'); } });
+function handleCategoryChange() { const category = categorySelect.value; const isPokemon = (category === 'pokemon'); const dexOptions = document.querySelectorAll('.pokemon-only-option'); dexOptions.forEach(option => { option.hidden = !isPokemon; }); if (!isPokemon) { if (sourceLangSelect.value === 'dex_id') sourceLangSelect.value = ""; if (targetLangSelect.value === 'dex_id') targetLangSelect.value = ""; } syncLanguages(); }
 categorySelect.addEventListener('change', handleCategoryChange);
-
-// --- 스크립트 시작 시 실행 --- (동일)
 loadData();
 syncLanguages();
 setInitialTheme();
