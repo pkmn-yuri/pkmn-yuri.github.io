@@ -18,12 +18,6 @@ async function loadData() {
         const response = await fetch('database.json');
         masterDB = await response.json();
         console.log('마스터 DB 로딩 성공!');
-        for (const category in masterDB) {
-            if (category === 'character' && Object.keys(masterDB[category].db).length === 0) {
-                const option = categorySelect.querySelector(`option[value="${category}"]`);
-                if (option) option.disabled = true;
-            }
-        }
     } catch (error) {
         console.error('데이터 로딩 실패:', error);
         resultArea.value = '오류: DB 로딩 실패';
@@ -209,7 +203,7 @@ searchInput.addEventListener('keydown', function(event) { if (event.key === 'Ent
 function syncLanguages() { const sourceVal = sourceLangSelect.value; const targetVal = targetLangSelect.value; for (const option of targetLangSelect.options) { if (option.value && option.value === sourceVal) option.disabled = true; else option.disabled = false; } for (const option of sourceLangSelect.options) { if (option.value && option.value === targetVal) option.disabled = true; else option.disabled = false; } }
 sourceLangSelect.addEventListener('change', syncLanguages); targetLangSelect.addEventListener('change', syncLanguages);
 swapButton.addEventListener('click', () => { const sourceVal = sourceLangSelect.value; const targetVal = targetLangSelect.value; sourceLangSelect.value = targetVal; targetLangSelect.value = sourceVal; const sourceText = searchInput.value; let resultText = resultArea.value; const isErrorOrPlaceholder = ['결과 없음', '카테고리 오류', '해당 언어 데이터 없음', 'API 검색 중...', '오류: API 연결 실패', '해당 언어 데이터 없음 (API)', '카테고리를 먼저 선택하세요.', '번역할 언어를 선택하세요.', '번역될 언어를 선택하세요.', '이 카테고리는 도감번호를 지원하지 않습니다.', '결과 없음 (최종)', '유효하지 않은 ID', '로컬 DB에 dex_id 없음'].includes(resultText.trim()); if (!isErrorOrPlaceholder && resultText.trim() !== '') { if (resultText.includes(' (')) { resultText = resultText.split(' (')[0]; } searchInput.value = resultText; resultArea.value = sourceText; } else { resultArea.value = ''; } syncLanguages(); });
-function applyTheme(theme) { if (theme === 'dark') { htmlEl.classList.add('dark'); themeToggle.textContent = '☀️'; } else { htmlEl.classList.remove('dark'); themeToggle.textContent = '🌙'; } }
+function applyTheme(theme) { if (theme === 'dark') { htmlEl.classList.add('dark'); themeToggle.textContent = '🌙'; } else { htmlEl.classList.remove('dark'); themeToggle.textContent = '☀️'; } }
 function setInitialTheme() { const savedTheme = localStorage.getItem('theme'); if (savedTheme) { applyTheme(savedTheme); } else { const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches; applyTheme(prefersDark ? 'dark' : 'light'); } }
 themeToggle.addEventListener('click', () => { const isDark = htmlEl.classList.contains('dark'); const newTheme = isDark ? 'light' : 'dark'; applyTheme(newTheme); localStorage.setItem('theme', newTheme); });
 window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (event) => { const savedTheme = localStorage.getItem('theme'); if (!savedTheme) { applyTheme(event.matches ? 'dark' : 'light'); } });
