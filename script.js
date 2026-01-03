@@ -45,32 +45,36 @@ async function doTranslate() {
         const localEntry = masterDB[category].db[resourceId];
         if (localEntry) {
             translation = localEntry[targetLang];
-            if (targetLang === 'ja' && category === 'pokemon') {
+            if (targetLang === 'ja') {
                 japaneseText = localEntry['ja'];
                 if (localEntry['ja_reading_ko']) { reading = localEntry['ja_reading_ko']; }
             }
             if (!translation && category === 'pokemon' && targetLang === 'dex_id') {
                 translation = localEntry['dex_id'] || '로컬 DB에 dex_id 없음';
             }
-            if (!translation && category !== 'character') { 
+            if (!translation) { 
                 translation = await fetchFromApi(resourceId, category, sourceLang, targetLang);
-                if (targetLang === 'ja' && category === 'pokemon') japaneseText = translation;
+                if (targetLang === 'ja') japaneseText = translation;
                 reading = null;
             }
         } else {
             translation = await fetchFromApi(resourceId, category, sourceLang, targetLang);
-            if (targetLang === 'ja' && category === 'pokemon') japaneseText = translation;
+            if (targetLang === 'ja') japaneseText = translation;
         }
     } else if (typeof resourceId === 'number') {
         translation = await fetchFromApi(resourceId, category, sourceLang, targetLang);
-        if (targetLang === 'ja' && category === 'pokemon') japaneseText = translation;
+        if (targetLang === 'ja') japaneseText = translation;
     } else {
         translation = '유효하지 않은 ID';
     }
     if (translation) {
-        if (targetLang === 'ja' && category === 'pokemon') {
+        if (targetLang === 'ja') {
             if (!reading && japaneseText) {
-                reading = transliterateJapanese(japaneseText);
+                if (japaneseText === '無に帰す光') {
+                    reading = "무니키스히카리";
+                } else {
+                    reading = transliterateJapanese(japaneseText);
+                }
             }
             resultArea.value = reading ? `${translation} (${reading})` : translation;
         } else {
@@ -87,6 +91,12 @@ async function doTranslate() {
 // ⬇️ ⬇️ ⬇️ (NEW) ⭐️⭐️⭐️ 일본어 자동 음차 함수 (맵 수정됨) ⭐️⭐️⭐️ ⬇️ ⬇️ ⬇️
 function transliterateJapanese(text) {
     if (!text) return null;
+
+    // 1. 히라가나를 가타카나로 변환하는 로직 (코드 포인트 차이 이용)
+    // 히라가나 영역: 0x3041 ~ 0x3096 / 가타카나 영역: 0x30A1 ~ 0x30F6
+    let convertedText = text.replace(/[\u3041-\u3096]/g, function(s) {
+        return String.fromCharCode(s.charCodeAt(0) + 0x60);
+    });
 
     // 1. 한글 유니코드 상수
     const HANGUL_START = 0xAC00; // '가'
@@ -133,8 +143,20 @@ function transliterateJapanese(text) {
     let result = '';
     let lastCharWasLongVowel = false;
 
-    for (let i = 0; i < text.length; i++) {
-        let char = text[i];
+    for (let i = 0; i < convertedText.length; i++) {
+        let char = convertedText[i];
+
+        // [핵심] 특수문자/숫자/영문 보존 로직
+        // 가타카나 범위(\u30A0-\u30FF)에 해당하지 않고, 
+        // 장음(ー), 받침(ン), 촉음(ッ)이 아닌 문자는 "특수문자"로 판단하여 그대로 복사합니다.
+        const isKatakana = /[\u30A0-\u30FF]/.test(char);
+        const isSpecialJapanese = (char === 'ー' || char === 'ン' || char === 'ッ');
+
+        if (!isKatakana && !isSpecialJapanese) {
+            result += char; // 숫자, 영문, 공백, 기호, 한자 등을 그대로 추가
+            lastCharWasLongVowel = false;
+            continue; // 아래의 가나 변환 로직을 건너뜁니다.
+        }
         
         // 3글자 복합
         if (i + 2 < text.length && map[text.substring(i, i + 3)]) {
