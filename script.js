@@ -145,18 +145,6 @@ function transliterateJapanese(text) {
 
     for (let i = 0; i < convertedText.length; i++) {
         let char = convertedText[i];
-
-        // [핵심] 특수문자/숫자/영문 보존 로직
-        // 가타카나 범위(\u30A0-\u30FF)에 해당하지 않고, 
-        // 장음(ー), 받침(ン), 촉음(ッ)이 아닌 문자는 "특수문자"로 판단하여 그대로 복사합니다.
-        const isKatakana = /[\u30A0-\u30FF]/.test(char);
-        const isSpecialJapanese = (char === 'ー' || char === 'ン' || char === 'ッ');
-
-        if (!isKatakana && !isSpecialJapanese) {
-            result += char; // 숫자, 영문, 공백, 기호, 한자 등을 그대로 추가
-            lastCharWasLongVowel = false;
-            continue; // 아래의 가나 변환 로직을 건너뜁니다.
-        }
         
         // 3글자 복합
         if (i + 2 < text.length && map[text.substring(i, i + 3)]) {
