@@ -52,8 +52,6 @@ async function doTranslate() {
     const langMap = masterDB[category].map[sourceLang];
     const resourceId = langMap ? langMap[query] : undefined;
 
-    // ... (이하 결과 처리 로직) ...
-
     const pronHangeul = document.getElementById('pronHangeul') || pronunciationArea; 
     const pronRomaji = document.getElementById('pronRomaji'); 
 
