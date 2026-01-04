@@ -31,26 +31,11 @@ async function loadData() {
 async function doTranslate() {
     // 1. 기본 입력값 (공백 제거)
     let query = searchInput.value.trim();
-    
     const category = categorySelect.value;
     const sourceLang = sourceLangSelect.value;
     const targetLang = targetLangSelect.value;
 
     // 2. 언어별 쿼리 정제 로직 분기
-    if (sourceLang === 'ja') {
-        // 일본어일 때만: 반각 -> 전각 변환 + 대문자화
-        query = query.replace(/[!-~]/g, function(s) {
-            return String.fromCharCode(s.charCodeAt(0) + 0xFEE0);
-        }).toUpperCase();
-    } else {
-        // 그 외 언어(en, fr, ko 등): 모두 소문자화 (기본 정책)
-        query = query.toLowerCase();
-    }
-
-    // ... (이하 요소 초기화 및 masterDB 체크 로직 동일) ...
-
-    const langMap = masterDB[category].map[sourceLang];
-    const resourceId = langMap ? langMap[query] : undefined;
 
     const pronHangeul = document.getElementById('pronHangeul') || pronunciationArea; 
     const pronRomaji = document.getElementById('pronRomaji'); 
@@ -65,6 +50,18 @@ async function doTranslate() {
     if (!sourceLang) { resultArea.textContent = '번역할 언어를 선택하세요.'; return; }
     if (!targetLang) { resultArea.textContent = '번역될 언어를 선택하세요.'; return; }
     if (!masterDB[category]) { resultArea.textContent = '카테고리 오류'; return; }
+
+    if (sourceLang === 'ja') {
+        // 일본어일 때만: 반각 -> 전각 변환 + 대문자화
+        query = query.replace(/[!-~]/g, function(s) {
+            return String.fromCharCode(s.charCodeAt(0) + 0xFEE0);
+        }).toUpperCase();
+    } else {
+        // 그 외 언어(en, fr, ko 등): 모두 소문자화 (기본 정책)
+        query = query.toLowerCase();
+    }
+
+    // ... (이하 요소 초기화 및 masterDB 체크 로직 동일) ...
 
     const langMap = masterDB[category].map[sourceLang];
     const resourceId = langMap ? langMap[query] : undefined;
