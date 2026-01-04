@@ -77,48 +77,54 @@ async function doTranslate() {
         resultArea.textContent = translation;
         
         // 2열과 3열 요소 가져오기 (HTML에 id="pronHangeul"과 id="pronRomaji"가 있어야 합니다)
-    const pronHangeul = document.getElementById('pronHangeul'); 
-    const pronRomaji = document.getElementById('pronRomaji'); 
-    const resultContainer = document.querySelector('.result-container');
+        const pronHangeul = document.getElementById('pronHangeul') || pronunciationArea; 
+        const pronRomaji = document.getElementById('pronRomaji'); 
 
-    // 1. 초기화 (매 번역 시작 시 깨끗하게 지움)
-    pronHangeul.textContent = "";
-    pronHangeul.style.display = "none";
-    if(pronRomaji) {
-        pronRomaji.textContent = "";
-        pronRomaji.style.display = "none";
-    }
-
-    if (translation) {
-        resultArea.textContent = translation;
+        // 초기화
+        pronHangeul.textContent = "";
+        if(pronRomaji) pronRomaji.textContent = "";
 
         if (targetLang === 'ja') {
-            // 일본어 처리
+            // 일본어: 2열에 한글 발음, 3열에 로마자
             if (!reading && japaneseText) {
                 reading = (japaneseText === '無に帰す光') ? "무니키스히카리" : transliterateJapanese(japaneseText);
             }
             pronHangeul.textContent = reading || "";
-            pronHangeul.style.display = reading ? "block" : "none";
+            if(pronRomaji) pronRomaji.textContent = getJapaneseRomaji(japaneseText || translation);
             
-            if(pronRomaji) {
-                const romaji = getJapaneseRomaji(japaneseText || translation);
-                pronRomaji.textContent = romaji;
-                pronRomaji.style.display = romaji ? "block" : "none";
-            }
+            pronHangeul.style.display = "block";
+            if(pronRomaji) pronRomaji.style.display = "block";
+            resultArea.style.borderBottomLeftRadius = "0";
+            resultArea.style.borderBottomRightRadius = "0";
         } 
         else if (targetLang === 'ko') {
-            // 한국어 처리 (로마자를 바로 2열에 표시)
-            const korRomaji = getKoreanRomaji(translation);
-            pronHangeul.textContent = korRomaji;
-            pronHangeul.style.display = korRomaji ? "block" : "none";
+            // 한국어: 2열에 바로 로마자 배치 (3열 비움)
+            pronHangeul.textContent = getKoreanRomaji(translation);
+            if(pronRomaji) {
+                pronRomaji.textContent = "";
+                pronRomaji.style.display = "none";
+            }
+            
+            pronHangeul.style.display = "block";
+            resultArea.style.borderBottomLeftRadius = "0";
+            resultArea.style.borderBottomRightRadius = "0";
+        } 
+        else {
+            // 기타 언어: 발음 영역 숨김
+            pronHangeul.style.display = "none";
+            if(pronRomaji) pronRomaji.style.display = "none";
+            resultArea.style.borderBottomLeftRadius = "8px";
+            resultArea.style.borderBottomRightRadius = "8px";
         }
-
-        // 테두리 관리 (발음이 하나라도 있으면 하단 둥글기 유지)
-        // 기존에 border-bottom: none 했던 속성이 있다면 CSS에서 제거하는 것이 좋습니다.
     } else {
         resultArea.textContent = '결과 없음 (최종)';
+        pronunciationArea.textContent = "";
+        pronunciationArea.style.display = "none";
+        resultArea.style.borderBottomLeftRadius = "8px";
+        resultArea.style.borderBottomRightRadius = "8px";
     }
 }
+
 // (API 호출 함수 및 기타 함수는 이전과 동일)
 // ... (fetchFromApi, findNameInApiData) ...
 
