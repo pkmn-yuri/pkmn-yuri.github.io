@@ -138,7 +138,28 @@ textarea::placeholder { color: var(--secondary-text); }
     }
 }
 
-/* --- 6. 결과창 통합 레이아웃 --- */
+/* --- 6. 발음 표시 영역 (추가) --- */
+#pronunciationArea {
+    width: 100%;
+    min-height: 1.5rem;          /* 내용이 없을 때도 최소 높이 유지 */
+    padding: 0 12px 10px 12px;   /* 상단 0, 좌우 12px, 하단 10px */
+    font-size: 0.9rem;           /* 결과 텍스트(1.2em)보다 작은 크기 */
+    color: var(--secondary-text); /* 연한 회색 계열 */
+    background-color: var(--result-bg-color); /* 결과창과 동일한 배경색 */
+    border: 1px solid var(--border-color);
+    border-top: none;            /* 결과창과 이어지도록 상단 선 제거 */
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+    box-sizing: border-box;
+    overflow-wrap: break-word;   /* 긴 발음은 자동 줄바꿈 */
+}
+
+/* 다크모드 대응 (이미 root 변수를 사용하므로 색상은 자동으로 조절되지만, 미세 조정이 필요할 때 사용) */
+html.dark #pronunciationArea {
+    border-color: var(--border-color);
+}
+
+/* --- 7. 결과창 레이아웃 수정 --- */
 .result-container {
     flex-grow: 1;
     display: flex;
@@ -149,36 +170,24 @@ textarea::placeholder { color: var(--secondary-text); }
     padding: 12px;
     overflow-y: auto;
     box-sizing: border-box;
-    /* 내부 요소들이 상자 밖으로 나가지 않게 함 */
 }
 
 #resultArea {
     width: 100%;
-    margin-bottom: 6px;
-    font-size: 1.3rem; /* 결과 텍스트 크기 */
+    margin-bottom: 4px;
+    font-size: 1.3rem;
     font-weight: bold;
     color: var(--text-color);
-    background-color: transparent;
-    border: none;
-    padding: 0;
     min-height: 1.5rem;
 }
 
 /* 발음 공통 스타일 (2, 3번째 줄) */
 .sub-reading {
     width: 100%;
-    font-size: 0.95rem; /* 폰트 크기를 살짝 키워 가독성 확보 */
-    font-family: inherit; /* 부모 폰트 상속 */
+    font-size: 0.9rem;
     color: var(--secondary-text);
-    line-height: 1.5;
+    line-height: 1.4;
     word-break: break-all;
-    display: none; /* 내용이 없을 땐 숨김 */
-}
-
-/* 상자 아래 각진 부분 처리 (발음이 있을 때 script에서 동적 제어) */
-.result-container.has-pronunciation {
-    border-bottom-left-radius: 8px;
-    border-bottom-right-radius: 8px;
 }
 
 /* 복사 버튼 위치 미세 조정 */
