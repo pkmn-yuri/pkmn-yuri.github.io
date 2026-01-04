@@ -79,6 +79,13 @@ html, body {
 }
 #searchInput:focus { outline: 2px solid var(--input-focus-border); border-color: transparent; }
 /* 기존 #resultArea 부분을 아래와 같이 수정/보강 */
+/* 결과창이 비어있을 때만 글자를 보여줌 */
+#resultArea:empty::before {
+    content: "번역 결과...";
+    color: var(--secondary-text); /* 회색 톤 */
+    font-weight: normal;
+    font-size: 1.1rem;
+}
 #resultArea { 
     background-color: var(--result-bg-color); 
     border-bottom-left-radius: 0;   /* 발음 영역과 연결되도록 하단 둥글기 제거 */
