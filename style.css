@@ -52,8 +52,20 @@ html, body {
 #targetLang, #sourceLang {
     margin-bottom: 10px; /* select와 입력창 사이의 간격 유지 */
 }
+/* 기존 4번 레이아웃 섹션 내부 수정 */
 #searchInput, #resultArea {
-    width: 100%; height: 100%; flex-grow: 1; padding: 12px; font-size: 1.2em; border: 1px solid var(--border-color); border-radius: 8px; box-sizing: border-box; background-color: var(--input-bg-color); color: var(--text-color); resize: none;
+    width: 100%; 
+    /* height: 100%;  <-- 이 줄을 삭제하거나 주석 처리하세요 */
+    flex-grow: 1; 
+    padding: 12px; 
+    font-size: 1.2em; 
+    border: 1px solid var(--border-color); 
+    border-radius: 8px; 
+    box-sizing: border-box; 
+    background-color: var(--input-bg-color); 
+    color: var(--text-color); 
+    resize: none;
+    min-height: 100px; /* ⭐️ 내용이 적어도 유지될 최소 높이 추가 */
 }
 #searchInput:focus { outline: 2px solid var(--input-focus-border); border-color: transparent; }
 /* 기존 #resultArea 부분을 아래와 같이 수정/보강 */
@@ -112,24 +124,27 @@ textarea::placeholder { color: var(--secondary-text); }
         height: 100%; 
     }
     #searchInput, #resultArea {
-        height: 100%;
+        /* height: 100%; <-- 이 줄도 삭제하거나 주석 처리하세요 */
+        height: auto;    /* ⭐️ 자동으로 높이 조절 */
+        min-height: 200px; /* ⭐️ 데스크톱 환경에 맞는 최소 높이 */
     }
 }
 
-/* --- 6. 발음 표시 영역 (추가) --- */
+/* --- 6. 발음 표시 영역 수정 --- */
 #pronunciationArea {
     width: 100%;
-    min-height: 1.5rem;          /* 내용이 없을 때도 최소 높이 유지 */
-    padding: 0 12px 10px 12px;   /* 상단 0, 좌우 12px, 하단 10px */
-    font-size: 0.9rem;           /* 결과 텍스트(1.2em)보다 작은 크기 */
-    color: var(--secondary-text); /* 연한 회색 계열 */
-    background-color: var(--result-bg-color); /* 결과창과 동일한 배경색 */
+    min-height: 1.2rem;          
+    padding: 0 12px 12px 12px;   /* ⭐️ 상단 패딩을 0으로 유지하여 글씨 바로 밑에 배치 */
+    font-size: 0.9rem;           
+    color: var(--secondary-text); 
+    background-color: var(--result-bg-color); 
     border: 1px solid var(--border-color);
-    border-top: none;            /* 결과창과 이어지도록 상단 선 제거 */
+    border-top: none;            
     border-bottom-left-radius: 8px;
     border-bottom-right-radius: 8px;
     box-sizing: border-box;
-    overflow-wrap: break-word;   /* 긴 발음은 자동 줄바꿈 */
+    overflow-wrap: break-word;   
+    margin-top: -2px;            /* ⭐️ 결과창과 경계선을 겹치게 하여 더 밀착시킴 */
 }
 
 /* 다크모드 대응 (이미 root 변수를 사용하므로 색상은 자동으로 조절되지만, 미세 조정이 필요할 때 사용) */
