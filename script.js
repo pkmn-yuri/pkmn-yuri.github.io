@@ -51,21 +51,21 @@ async function doTranslate() {
     if (!targetLang) { resultArea.textContent = '번역될 언어를 선택하세요.'; return; }
     if (!masterDB[category]) { resultArea.textContent = '카테고리 오류'; return; }
 
-    // --- 언어별 쿼리 정제 (이 부분을 교체하세요) ---
+    // --- 언어별 맞춤 정제 로직 ---
     if (sourceLang === 'ja') {
-        // 1. 우선 모든 영문을 대문자로 만듭니다. (반각/전각 모두 적용)
-        query = query.toUpperCase();
-
-        // 2. 반각 문자(숫자, 알파벳, 기호)를 전각으로 변환합니다.
-        // 범위: ! (0x21) ~ ~ (0x7E)
+        // [일본어일 때]
+        // 1. 반각 문자(!-~)를 전각으로 변환 (Z -> Ｚ, 1 -> １)
         query = query.replace(/[!-~]/g, function(s) {
             return String.fromCharCode(s.charCodeAt(0) + 0xFEE0);
         });
 
-        // 3. 반각 공백도 전각 공백으로 변환 (필요한 경우)
-        query = query.replace(/ /g, "\u3000");
+        // 2. 모든 소문자를 대문자로 변환 (전각/반각 공통 적용)
+        // 이 과정에서 전각 소문자 'ｚ'도 전각 대문자 'Ｚ'가 됩니다.
+        query = query.toUpperCase();
+        
     } else {
-        // 기타 언어: 소문자화
+        // [일본어가 아닐 때 (영어, 한국어 등)]
+        // 기존처럼 소문자로 변환하여 매칭
         query = query.toLowerCase();
     }
 
