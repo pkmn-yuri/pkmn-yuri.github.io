@@ -46,6 +46,28 @@ html, body {
     gap: 0; /* ⭐️ gap을 10px에서 0으로 바꾸면 textarea와 발음영역이 찰싹 붙습니다 */
     min-height: 0; 
     flex-grow: 1; 
+    position: relative;
+}
+
+/* 복사 버튼 공통 스타일 */
+.copy-btn {
+    align-self: flex-end; /* 오른쪽 정렬 */
+    margin-top: 5px;
+    padding: 5px 12px;
+    font-size: 0.8rem;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background-color: var(--box-color);
+    color: var(--text-color);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.copy-btn:hover {
+    background-color: var(--primary-color);
+    color: var(--primary-text);
+    border-color: var(--primary-color);
 }
 
 /* select 상단 여백을 위해 추가 */
