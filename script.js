@@ -76,7 +76,11 @@ async function doTranslate() {
         resultArea.textContent = translation;
         
         if (targetLang === 'ja') {
-            if (!reading && japaneseText) reading = transliterateJapanese(japaneseText);
+            if (japaneseText === '無に帰す光') {
+                reading = "무니키스히카리";
+            } else if (!reading && japaneseText) {
+                reading = transliterateJapanese(japaneseText);
+            }
             pronHangeul.textContent = reading || "";
             if(pronRomaji) pronRomaji.textContent = getJapaneseRomaji(japaneseText || translation);
             pronHangeul.style.display = "block";
