@@ -71,28 +71,46 @@ async function doTranslate() {
     // ... doTranslate 함수 내부 ...
 
     if (translation) {
-        // 1. 번역 결과는 무조건 결과창에 먼저 입력
+        // 1. 번역 결과 입력
         resultArea.value = translation;
 
         // 2. 일본어 발음 처리
         if (targetLang === 'ja') {
+            // reading 값이 이미 있다면(예: API에서 받아옴) 그대로 쓰고, 없다면 변환
             if (!reading && japaneseText) {
-                // 예외 처리 및 발음 변환
                 if (japaneseText === '無に帰す光') {
                     reading = "무니키스히카리";
                 } else {
                     reading = transliterateJapanese(japaneseText);
                 }
             }
-            // ⭐️ 결과창 밑의 작은 글씨 영역에 발음 입력
-            pronunciationArea.textContent = reading ? reading : "";
+
+            if (reading) {
+                pronunciationArea.textContent = reading;
+                pronunciationArea.style.display = "block"; // 발음 영역 보이기
+                // ⭐️ 발음이 있을 때는 결과창의 하단 모서리를 각지게 변경
+                resultArea.style.borderBottomLeftRadius = "0";
+                resultArea.style.borderBottomRightRadius = "0";
+            } else {
+                pronunciationArea.textContent = "";
+                pronunciationArea.style.display = "none";
+                // ⭐️ 발음이 없으면 다시 둥글게
+                resultArea.style.borderBottomLeftRadius = "8px";
+                resultArea.style.borderBottomRightRadius = "8px";
+            }
         } else {
-            // 일본어가 아닐 경우 발음 영역 비우기
+            // 일본어가 아니면 발음 영역을 숨기고 결과창 모서리를 둥글게 복구
             pronunciationArea.textContent = "";
+            pronunciationArea.style.display = "none";
+            resultArea.style.borderBottomLeftRadius = "8px";
+            resultArea.style.borderBottomRightRadius = "8px";
         }
     } else {
         resultArea.value = '결과 없음 (최종)';
         pronunciationArea.textContent = "";
+        pronunciationArea.style.display = "none";
+        resultArea.style.borderBottomLeftRadius = "8px";
+        resultArea.style.borderBottomRightRadius = "8px";
     }
 }
 
@@ -271,9 +289,14 @@ swapButton.addEventListener('click', () => {
         resultArea.value = '';
     }
 
-    // ⭐️ 5. 발음 표시 영역 초기화 (가장 중요한 추가 사항)
+    // ⭐️ 4. 발음 표시 영역 초기화 및 UI 복구 (추가된 부분)
     if (pronunciationArea) {
         pronunciationArea.textContent = "";
+        pronunciationArea.style.display = "none"; // 발음 영역 숨김
+        
+        // 결과창의 테두리를 다시 사방으로 둥글게 복구
+        resultArea.style.borderBottomLeftRadius = "8px";
+        resultArea.style.borderBottomRightRadius = "8px";
     }
 
     syncLanguages();
