@@ -72,38 +72,47 @@ async function doTranslate() {
     }
     // ... doTranslate 함수 내부 ...
 
+    // ... doTranslate 함수 하단부 ...
     if (translation) {
-        // 1. 번역 결과 입력
         resultArea.textContent = translation;
+        
+        // 2열과 3열 요소 가져오기 (HTML에 id="pronHangeul"과 id="pronRomaji"가 있어야 합니다)
+        const pronHangeul = document.getElementById('pronHangeul') || pronunciationArea; 
+        const pronRomaji = document.getElementById('pronRomaji'); 
 
-        // 2. 일본어 발음 처리
+        // 초기화
+        pronHangeul.textContent = "";
+        if(pronRomaji) pronRomaji.textContent = "";
+
         if (targetLang === 'ja') {
-            // reading 값이 이미 있다면(예: API에서 받아옴) 그대로 쓰고, 없다면 변환
+            // 일본어: 2열에 한글 발음, 3열에 로마자
             if (!reading && japaneseText) {
-                if (japaneseText === '無に帰す光') {
-                    reading = "무니키스히카리";
-                } else {
-                    reading = transliterateJapanese(japaneseText);
-                }
+                reading = (japaneseText === '無に帰す光') ? "무니키스히카리" : transliterateJapanese(japaneseText);
             }
-
-            if (reading) {
-                pronunciationArea.textContent = reading;
-                pronunciationArea.style.display = "block"; // 발음 영역 보이기
-                // ⭐️ 발음이 있을 때는 결과창의 하단 모서리를 각지게 변경
-                resultArea.style.borderBottomLeftRadius = "0";
-                resultArea.style.borderBottomRightRadius = "0";
-            } else {
-                pronunciationArea.textContent = "";
-                pronunciationArea.style.display = "none";
-                // ⭐️ 발음이 없으면 다시 둥글게
-                resultArea.style.borderBottomLeftRadius = "8px";
-                resultArea.style.borderBottomRightRadius = "8px";
+            pronHangeul.textContent = reading || "";
+            if(pronRomaji) pronRomaji.textContent = getJapaneseRomaji(japaneseText || translation);
+            
+            pronHangeul.style.display = "block";
+            if(pronRomaji) pronRomaji.style.display = "block";
+            resultArea.style.borderBottomLeftRadius = "0";
+            resultArea.style.borderBottomRightRadius = "0";
+        } 
+        else if (targetLang === 'ko') {
+            // 한국어: 2열에 바로 로마자 배치 (3열 비움)
+            pronHangeul.textContent = getKoreanRomaji(translation);
+            if(pronRomaji) {
+                pronRomaji.textContent = "";
+                pronRomaji.style.display = "none";
             }
-        } else {
-            // 일본어가 아니면 발음 영역을 숨기고 결과창 모서리를 둥글게 복구
-            pronunciationArea.textContent = "";
-            pronunciationArea.style.display = "none";
+            
+            pronHangeul.style.display = "block";
+            resultArea.style.borderBottomLeftRadius = "0";
+            resultArea.style.borderBottomRightRadius = "0";
+        } 
+        else {
+            // 기타 언어: 발음 영역 숨김
+            pronHangeul.style.display = "none";
+            if(pronRomaji) pronRomaji.style.display = "none";
             resultArea.style.borderBottomLeftRadius = "8px";
             resultArea.style.borderBottomRightRadius = "8px";
         }
@@ -243,6 +252,106 @@ function transliterateJapanese(text) {
     return result;
 }
 
+// --- [추가 1] 한국어 로마자 변환 (음절별 하이픈, 겹받침 규칙) ---
+function getKoreanRomaji(text) {
+    if (!text) return "";
+    const cho = ["g","kk","n","d","tt","r","m","b","pp","s","ss","","j","jj","ch","k","t","p","h"];
+    const jung = ["a","ae","ya","yae","eo","e","yeo","ye","o","wa","wae","oe","yo","u","wo","we","wi","yu","eu","ui","i"];
+    const jong = ["","k","k","k","n","n","n","t","l","k","m","l","l","l","p","l","m","p","p","t","t","ng","t","t","k","t","p","t"];
+
+    let result = [];
+    for (let i = 0; i < text.length; i++) {
+        const code = text.charCodeAt(i) - 44032;
+        if (code >= 0 && code <= 11171) {
+            const c = Math.floor(code / 588);
+            const ju = Math.floor((code % 588) / 28);
+            const jo = code % 28;
+            result.push(cho[c] + jung[ju] + jong[jo]);
+        } else {
+            result.push(text[i]);
+        }
+    }
+    return result.join('-').toLowerCase().replace(/- -/g, " ");
+}
+
+// --- [추가 2] 일본어 로마자 변환 (개정 헵번식, 장음 Ā, 촉음 ', n') ---
+function getJapaneseRomaji(text) {
+    if (!text) return "";
+    if (text === "無に帰す光") return "munikisuhikari";
+
+    const map = {
+        'ア':'a', 'イ':'i', 'ウ':'u', 'エ':'e', 'オ':'o',
+        'カ':'ka', 'キ':'ki', 'ク':'ku', 'ケ':'ke', 'コ':'ko',
+        'サ':'sa', 'シ':'shi', 'ス':'su', 'セ':'se', 'ソ':'so',
+        'タ':'ta', 'チ':'chi', 'ツ':'tsu', 'テ':'te', 'ト':'to',
+        'ナ':'na', 'ニ':'ni', 'ヌ':'nu', 'ネ':'ne', 'ノ':'no',
+        'ハ':'ha', 'ヒ':'hi', 'フ':'fu', 'ヘ':'he', 'ホ':'ho',
+        'マ':'ma', 'ミ':'mi', 'ム':'mu', 'メ':'me', 'モ':'mo',
+        'ヤ':'ya', 'ユ':'yu', 'ヨ':'yo',
+        'ラ':'ra', 'リ':'ri', 'ル':'ru', 'レ':'re', 'ロ':'ro',
+        'ワ':'wa', 'ヲ':'o',
+        'ガ':'ga', 'ギ':'gi', 'グ':'gu', 'ゲ':'ge', 'ゴ':'go',
+        'ザ':'za', 'ジ':'ji', 'ズ':'zu', 'ゼ':'ze', 'ゾ':'zo',
+        'ダ':'da', 'ヂ':'ji', 'ヅ':'zu', 'デ':'de', 'ド':'do',
+        'バ':'ba', 'ビ':'bi', 'ブ':'bu', 'ベ':'be', 'ボ':'bo',
+        'パ':'pa', 'ピ':'pi', 'プ':'pu', 'ペ':'pe', 'ポ':'po',
+        'ヴ': 'vu',
+        // ⭐️ ⬇️ ⬇️ ⬇️ (핵심 수정!) ⬇️ ⬇️ ⬇️ ⭐️
+        'ファ':'fa', 'フィ':'fi', 'フェ':'fe', 'フォ':'fo', 'フュ': 'fyu',
+        'キャ':'kya', 'キュ':'kyu', 'キョ':'kyo',
+        'シャ':'sha', 'シュ':'shu', 'ショ':'sho', 'シェ':'she',
+        'チャ':'cha', 'チュ':'chu', 'チョ':'cho', 'チェ':'che',
+        'ニャ':'nya', 'ニュ':'nyu', 'ニョ':'nyo',
+        'ヒャ':'hya', 'ヒュ':'hyu', 'ヒョ':'hyo',
+        'ミャ':'mya', 'ミュ':'myu', 'ミョ':'myo',
+        'リャ':'rya', 'リュ':'ryu', 'リョ':'ryo',
+        'ギャ':'gya', 'ギュ':'gyu', 'ギョ':'gyo',
+        'ジャ':'ja', 'ジュ':'ju', 'ジョ':'jo', 'ジェ':'je',
+        'ビャ':'bya', 'ビュ':'byu', 'ビョ':'byo',
+        'ピャ':'pya', 'ピュ':'pyu', 'ピョ':'pyo',
+        'ヴァ':'va', 'ヴィ':'vi', 'ヴェ':'ve', 'ヴォ':'vo', 'ヴュ': 'vyu',
+        'イェ': 'ye', 'ウィ': 'wi', 'ウェ': 'we', 'ウォ': 'wo',
+        'スィ': 'si', 'ズィ': 'zi', 'スュ': 'syu', 'ズュ': 'zyu',
+        'ティ':'ti', 'ディ':'di', 'トゥ': 'tu', 'ドゥ': 'du', 'テュ': 'tyu', 'デュ':'dyu',
+        'ツァ': 'tsa', 'ツィ': 'tsi', 'ツェ': 'tse', 'ツォ': 'tso', 'ツュ': 'tsyu',
+        'ァ':'a', 'ィ':'i', 'ゥ':'u', 'ェ':'e', 'ォ':'o',
+        'ャ':'ya', 'ュ':'yu', 'ョ':'yo'
+        // ⭐️ ⬆️ ⬆️ ⬆️ (핵심 수정 끝) ⬆️ ⬆️ ⬆️ ⭐️
+    };
+    const longVowelMarks = {'a':'ā','i':'ī','u':'ū','e':'ē','o':'ō'};
+
+    let res = "";
+    for (let i = 0; i < text.length; i++) {
+        let char = text[i];
+        let next = text[i+1] || "";
+        if(/[a-zA-Z]/.test(char)) { res += char.toUpperCase(); continue; }
+        if (char === 'っ' || char === 'ッ') {
+            if (!next || /[あいうえおやゆよ]/.test(next)) { res += "'"; }
+            else {
+                let nR = map[text.substring(i+1, i+3)] || map[next] || "";
+                res += (nR.startsWith('ch')) ? 't' : (nR[0] || "");
+            }
+            continue;
+        }
+        if (char === 'ー' && res.length > 0) {
+            let last = res.slice(-1);
+            if (longVowelMarks[last]) res = res.slice(0, -1) + longVowelMarks[last];
+            continue;
+        }
+        let dual = map[text.substring(i, i+2)];
+        if (dual) { res += dual; i++; }
+        else {
+            let single = map[char] || char;
+            if (char === 'ん' || char === 'ン') {
+                let nR = map[text.substring(i+1, i+3)] || map[next] || "";
+                if (/[aiueoy]/.test(nR[0] || "")) single = "n'";
+            }
+            res += (typeof single === 'string') ? single.toLowerCase() : single;
+        }
+    }
+    return res;
+}
+
 // 복사 함수 정의
 function copyToClipboard(text, button) {
     if (!text || text === "번역 결과..." || text === "결과 없음 (최종)") return;
@@ -321,16 +430,17 @@ swapButton.addEventListener('click', () => {
         resultArea.textContent = '';
     }
 
-    // ⭐️ 4. 발음 표시 영역 초기화 및 UI 복구 (추가된 부분)
-    if (pronunciationArea) {
-        pronunciationArea.textContent = "";
-        pronunciationArea.style.display = "none"; // 발음 영역 숨김
-        
-        // 결과창의 테두리를 다시 사방으로 둥글게 복구
-        resultArea.style.borderBottomLeftRadius = "8px";
-        resultArea.style.borderBottomRightRadius = "8px";
-    }
-
+    // 발음 영역 초기화 추가
+    const pronHangeul = document.getElementById('pronHangeul') || pronunciationArea;
+    const pronRomaji = document.getElementById('pronRomaji');
+    
+    if (pronHangeul) pronHangeul.textContent = "";
+    if (pronRomaji) pronRomaji.textContent = "";
+    
+    // UI 복구
+    resultArea.style.borderBottomLeftRadius = "8px";
+    resultArea.style.borderBottomRightRadius = "8px";
+    
     syncLanguages();
     // 복사 버튼 텍스트 초기화 (혹시 복사 직후에 스왑할 경우 대비)
     copySourceBtn.textContent = "Copy";
