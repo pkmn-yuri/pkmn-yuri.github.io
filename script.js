@@ -9,6 +9,8 @@ const pronunciationArea = document.getElementById('pronunciationArea');
 const themeToggle = document.getElementById('themeToggle');
 const htmlEl = document.documentElement;
 const swapButton = document.getElementById('swapButton');
+const copySourceBtn = document.getElementById('copySource');
+const copyTargetBtn = document.getElementById('copyTarget');
 
 // 2. 마스터 데이터베이스 변수 (동일)
 let masterDB = {};
@@ -241,6 +243,36 @@ function transliterateJapanese(text) {
     return result;
 }
 
+// 복사 함수 정의
+function copyToClipboard(text, button) {
+    if (!text || text === "번역 결과..." || text === "결과 없음 (최종)") return;
+
+    navigator.clipboard.writeText(text).then(() => {
+        // 복사 성공 시 버튼 텍스트 변경 피드백
+        const originalText = button.textContent;
+        button.textContent = "Copied!";
+        button.style.backgroundColor = "#4ade80"; // 초록색 피드백
+        button.style.color = "white";
+
+        setTimeout(() => {
+            button.textContent = originalText;
+            button.style.backgroundColor = "";
+            button.style.color = "";
+        }, 1500);
+    }).catch(err => {
+        console.error('복사 실패:', err);
+    });
+}
+
+// 출발어 복사 버튼 이벤트 (textarea 사용)
+copySourceBtn.addEventListener('click', () => {
+    copyToClipboard(searchInput.value, copySourceBtn);
+});
+
+// 도착어 복사 버튼 이벤트 (div 사용)
+copyTargetBtn.addEventListener('click', () => {
+    copyToClipboard(resultArea.textContent, copyTargetBtn);
+});
 
 // (기존 코드들)
 // (fetchFromApi, findNameInApiData, syncLanguages, swapButton, theme logic, category change logic)
@@ -300,6 +332,9 @@ swapButton.addEventListener('click', () => {
     }
 
     syncLanguages();
+    // 복사 버튼 텍스트 초기화 (혹시 복사 직후에 스왑할 경우 대비)
+    copySourceBtn.textContent = "Copy";
+    copyTargetBtn.textContent = "Copy";
 });
 function applyTheme(theme) { if (theme === 'dark') { htmlEl.classList.add('dark'); themeToggle.textContent = '🌙'; } else { htmlEl.classList.remove('dark'); themeToggle.textContent = '☀️'; } }
 function setInitialTheme() { const savedTheme = localStorage.getItem('theme'); if (savedTheme) { applyTheme(savedTheme); } else { const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches; applyTheme(prefersDark ? 'dark' : 'light'); } }
