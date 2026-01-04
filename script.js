@@ -5,6 +5,7 @@ const targetLangSelect = document.getElementById('targetLang');
 const searchInput = document.getElementById('searchInput');
 const translateButton = document.getElementById('translateButton');
 const resultArea = document.getElementById('resultArea');
+const pronunciationArea = document.getElementById('pronunciationArea');
 const themeToggle = document.getElementById('themeToggle');
 const htmlEl = document.documentElement;
 const swapButton = document.getElementById('swapButton');
@@ -67,21 +68,31 @@ async function doTranslate() {
     } else {
         translation = '유효하지 않은 ID';
     }
+    // ... doTranslate 함수 내부 ...
+
     if (translation) {
+        // 1. 번역 결과는 무조건 결과창에 먼저 입력
+        resultArea.value = translation;
+
+        // 2. 일본어 발음 처리
         if (targetLang === 'ja') {
             if (!reading && japaneseText) {
+                // 예외 처리 및 발음 변환
                 if (japaneseText === '無に帰す光') {
                     reading = "무니키스히카리";
                 } else {
                     reading = transliterateJapanese(japaneseText);
                 }
             }
-            resultArea.value = reading ? `${translation} (${reading})` : translation;
+            // ⭐️ 결과창 밑의 작은 글씨 영역에 발음 입력
+            pronunciationArea.textContent = reading ? reading : "";
         } else {
-            resultArea.value = translation;
+            // 일본어가 아닐 경우 발음 영역 비우기
+            pronunciationArea.textContent = "";
         }
     } else {
         resultArea.value = '결과 없음 (최종)';
+        pronunciationArea.textContent = "";
     }
 }
 
@@ -228,7 +239,45 @@ if (translateButton) { translateButton.addEventListener('click', doTranslate); }
 searchInput.addEventListener('keydown', function(event) { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); doTranslate(); } });
 function syncLanguages() { const sourceVal = sourceLangSelect.value; const targetVal = targetLangSelect.value; for (const option of targetLangSelect.options) { if (option.value && option.value === sourceVal) option.disabled = true; else option.disabled = false; } for (const option of sourceLangSelect.options) { if (option.value && option.value === targetVal) option.disabled = true; else option.disabled = false; } }
 sourceLangSelect.addEventListener('change', syncLanguages); targetLangSelect.addEventListener('change', syncLanguages);
-swapButton.addEventListener('click', () => { const sourceVal = sourceLangSelect.value; const targetVal = targetLangSelect.value; sourceLangSelect.value = targetVal; targetLangSelect.value = sourceVal; const sourceText = searchInput.value; let resultText = resultArea.value; const isErrorOrPlaceholder = ['결과 없음', '카테고리 오류', '해당 언어 데이터 없음', 'API 검색 중...', '오류: API 연결 실패', '해당 언어 데이터 없음 (API)', '카테고리를 먼저 선택하세요.', '번역할 언어를 선택하세요.', '번역될 언어를 선택하세요.', '이 카테고리는 도감번호를 지원하지 않습니다.', '결과 없음 (최종)', '유효하지 않은 ID', '로컬 DB에 dex_id 없음'].includes(resultText.trim()); if (!isErrorOrPlaceholder && resultText.trim() !== '') { if (resultText.includes(' (')) { resultText = resultText.split(' (')[0]; } searchInput.value = resultText; resultArea.value = sourceText; } else { resultArea.value = ''; } syncLanguages(); });
+swapButton.addEventListener('click', () => {
+    const sourceVal = sourceLangSelect.value;
+    const targetVal = targetLangSelect.value;
+
+    // 2. 언어 설정 교체
+    sourceLangSelect.value = targetVal;
+    targetLangSelect.value = sourceVal;
+
+    const sourceText = searchInput.value;
+    let resultText = resultArea.value;
+
+    // 3. 에러 메시지 목록
+    const isErrorOrPlaceholder = [
+        '결과 없음', '카테고리 오류', '해당 언어 데이터 없음', 'API 검색 중...', 
+        '오류: API 연결 실패', '해당 언어 데이터 없음 (API)', '카테고리를 먼저 선택하세요.', 
+        '번역할 언어를 선택하세요.', '번역될 언어를 선택하세요.', 
+        '이 카테고리는 도감번호를 지원하지 않습니다.', '결과 없음 (최종)', 
+        '유효하지 않은 ID', '로컬 DB에 dex_id 없음'
+    ].includes(resultText.trim());
+
+    // 4. 텍스트 스왑 실행
+    if (!isErrorOrPlaceholder && resultText.trim() !== '') {
+        // 이제 발음이 따로 분리되었으므로 괄호 제거 로직은 안전장치로만 남겨둡니다.
+        if (resultText.includes(' (')) {
+            resultText = resultText.split(' (')[0];
+        }
+        searchInput.value = resultText;
+        resultArea.value = sourceText;
+    } else {
+        resultArea.value = '';
+    }
+
+    // ⭐️ 5. 발음 표시 영역 초기화 (가장 중요한 추가 사항)
+    if (pronunciationArea) {
+        pronunciationArea.textContent = "";
+    }
+
+    syncLanguages();
+});
 function applyTheme(theme) { if (theme === 'dark') { htmlEl.classList.add('dark'); themeToggle.textContent = '🌙'; } else { htmlEl.classList.remove('dark'); themeToggle.textContent = '☀️'; } }
 function setInitialTheme() { const savedTheme = localStorage.getItem('theme'); if (savedTheme) { applyTheme(savedTheme); } else { const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches; applyTheme(prefersDark ? 'dark' : 'light'); } }
 themeToggle.addEventListener('click', () => { const isDark = htmlEl.classList.contains('dark'); const newTheme = isDark ? 'light' : 'dark'; applyTheme(newTheme); localStorage.setItem('theme', newTheme); });
