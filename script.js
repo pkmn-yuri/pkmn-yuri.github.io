@@ -179,31 +179,39 @@ function transliterateJapanese(text) {
         
         // ン (N) 처리
         } else if (char === 'ン') {
-            let batchim = (lastCharWasLongVowel) ? '응' : 'ㄴ';
-            if (batchim === 'ㄴ' && result.length > 0) {
+            let handled = false;
+            // 1. 앞에 글자가 있고, 그 글자가 '받침이 없는 한글'인 경우에만 받침으로 합침
+            if (result.length > 0) {
                 let lastCharCode = result.charCodeAt(result.length - 1);
+                // 한글이면서 받침이 없는 경우 (28로 나눈 나머지가 0)
                 if (lastCharCode >= HANGUL_START && lastCharCode <= HANGUL_END && (lastCharCode - HANGUL_START) % 28 === 0) {
                     let newCharCode = lastCharCode + FINAL_N; // 'ㄴ' 받침 추가
                     result = result.slice(0, -1) + String.fromCharCode(newCharCode);
-                    lastCharWasLongVowel = false;
-                    continue; 
+                    handled = true;
                 }
             }
-            result += batchim;
+            
+            // 2. 받침으로 합치지 못한 경우 (어두, 장음 뒤, 이미 받침이 있는 경우 등)
+            if (!handled) {
+                result += '응';
+            }
             lastCharWasLongVowel = false;
         
         // ッ (촉음) 처리
         } else if (char === 'ッ') {
+            let handled = false;
             if (result.length > 0) {
                 let lastCharCode = result.charCodeAt(result.length - 1);
                 if (lastCharCode >= HANGUL_START && lastCharCode <= HANGUL_END && (lastCharCode - HANGUL_START) % 28 === 0) {
                     let newCharCode = lastCharCode + FINAL_S; // 'ㅅ' 받침 추가
                     result = result.slice(0, -1) + String.fromCharCode(newCharCode);
-                    lastCharWasLongVowel = false;
-                    continue;
+                    handled = true;
                 }
             }
-            result += 'ㅅ';
+
+            if (!handled) {
+                result += '읏';
+            }
             lastCharWasLongVowel = false;
             
         // ー (장음) 처리
