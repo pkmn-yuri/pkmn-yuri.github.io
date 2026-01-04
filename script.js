@@ -27,101 +27,68 @@ async function loadData() {
     }
 }
 
-// 4. 번역 실행 함수 (동일)
+// --- [수정] doTranslate 함수 (에러 시 초기화 및 레이아웃 최적화) ---
 async function doTranslate() {
-    // ... (이전 코드와 동일) ...
     const query = searchInput.value.trim().toLowerCase();
     const category = categorySelect.value;
     const sourceLang = sourceLangSelect.value;
     const targetLang = targetLangSelect.value;
+
+    const pronHangeul = document.getElementById('pronHangeul') || pronunciationArea; 
+    const pronRomaji = document.getElementById('pronRomaji'); 
+
+    // [중요] 새로운 검색 전 발음 영역 초기화 (에러 메시지 잔상 방지)
+    pronHangeul.textContent = "";
+    if(pronRomaji) pronRomaji.textContent = "";
+    pronHangeul.style.display = "none";
+    if(pronRomaji) pronRomaji.style.display = "none";
+
     if (!category) { resultArea.textContent = '카테고리를 먼저 선택하세요.'; return; }
     if (!sourceLang) { resultArea.textContent = '번역할 언어를 선택하세요.'; return; }
     if (!targetLang) { resultArea.textContent = '번역될 언어를 선택하세요.'; return; }
     if (!masterDB[category]) { resultArea.textContent = '카테고리 오류'; return; }
+
     const langMap = masterDB[category].map[sourceLang];
     const resourceId = langMap ? langMap[query] : undefined;
+
     if (!resourceId) { resultArea.textContent = '결과 없음'; return; }
+
     let translation;
     let reading = null; 
     let japaneseText = null; 
-    if (typeof resourceId === 'string') {
+
+    if (typeof resourceId === 'string' || typeof resourceId === 'number') {
         const localEntry = masterDB[category].db[resourceId];
         if (localEntry) {
             translation = localEntry[targetLang];
             if (targetLang === 'ja') {
                 japaneseText = localEntry['ja'];
-                if (localEntry['ja_reading_ko']) { reading = localEntry['ja_reading_ko']; }
+                reading = localEntry['ja_reading_ko'];
             }
-            if (!translation && category === 'pokemon' && targetLang === 'dex_id') {
-                translation = localEntry['dex_id'] || '로컬 DB에 dex_id 없음';
-            }
-            if (!translation) { 
-                translation = await fetchFromApi(resourceId, category, sourceLang, targetLang);
-                if (targetLang === 'ja') japaneseText = translation;
-                reading = null;
-            }
-        } else {
+        }
+        if (!translation) { 
             translation = await fetchFromApi(resourceId, category, sourceLang, targetLang);
             if (targetLang === 'ja') japaneseText = translation;
         }
-    } else if (typeof resourceId === 'number') {
-        translation = await fetchFromApi(resourceId, category, sourceLang, targetLang);
-        if (targetLang === 'ja') japaneseText = translation;
-    } else {
-        translation = '유효하지 않은 ID';
     }
-    // ... doTranslate 함수 내부 ...
 
-    // ... doTranslate 함수 하단부 ...
-    if (translation) {
+    if (translation && translation !== '결과 없음' && !translation.includes('오류')) {
         resultArea.textContent = translation;
         
-        // 2열과 3열 요소 가져오기 (HTML에 id="pronHangeul"과 id="pronRomaji"가 있어야 합니다)
-        const pronHangeul = document.getElementById('pronHangeul') || pronunciationArea; 
-        const pronRomaji = document.getElementById('pronRomaji'); 
-
-        // 초기화
-        pronHangeul.textContent = "";
-        if(pronRomaji) pronRomaji.textContent = "";
-
         if (targetLang === 'ja') {
-            // 일본어: 2열에 한글 발음, 3열에 로마자
-            if (!reading && japaneseText) {
-                reading = (japaneseText === '無に帰す光') ? "무니키스히카리" : transliterateJapanese(japaneseText);
-            }
+            if (!reading && japaneseText) reading = transliterateJapanese(japaneseText);
             pronHangeul.textContent = reading || "";
             if(pronRomaji) pronRomaji.textContent = getJapaneseRomaji(japaneseText || translation);
-            
             pronHangeul.style.display = "block";
             if(pronRomaji) pronRomaji.style.display = "block";
-            resultArea.style.borderBottomLeftRadius = "0";
-            resultArea.style.borderBottomRightRadius = "0";
         } 
         else if (targetLang === 'ko') {
-            // 한국어: 2열에 바로 로마자 배치 (3열 비움)
+            // 한국어는 2열(pronHangeul)에 로마자 바로 표시
             pronHangeul.textContent = getKoreanRomaji(translation);
-            if(pronRomaji) {
-                pronRomaji.textContent = "";
-                pronRomaji.style.display = "none";
-            }
-            
             pronHangeul.style.display = "block";
-            resultArea.style.borderBottomLeftRadius = "0";
-            resultArea.style.borderBottomRightRadius = "0";
-        } 
-        else {
-            // 기타 언어: 발음 영역 숨김
-            pronHangeul.style.display = "none";
-            if(pronRomaji) pronRomaji.style.display = "none";
-            resultArea.style.borderBottomLeftRadius = "8px";
-            resultArea.style.borderBottomRightRadius = "8px";
         }
     } else {
-        resultArea.textContent = '결과 없음 (최종)';
-        pronunciationArea.textContent = "";
-        pronunciationArea.style.display = "none";
-        resultArea.style.borderBottomLeftRadius = "8px";
-        resultArea.style.borderBottomRightRadius = "8px";
+        resultArea.textContent = translation || '결과 없음 (최종)';
     }
 }
 
@@ -259,19 +226,30 @@ function getKoreanRomaji(text) {
     const jung = ["a","ae","ya","yae","eo","e","yeo","ye","o","wa","wae","oe","yo","u","wo","we","wi","yu","eu","ui","i"];
     const jong = ["","k","k","k","n","n","n","t","l","k","m","l","l","l","p","l","m","p","p","t","t","ng","t","t","k","t","p","t"];
 
-    let result = [];
+    let result = "";
     for (let i = 0; i < text.length; i++) {
-        const code = text.charCodeAt(i) - 44032;
+        const char = text[i];
+        const code = char.charCodeAt(0) - 44032;
+
         if (code >= 0 && code <= 11171) {
             const c = Math.floor(code / 588);
             const ju = Math.floor((code % 588) / 28);
             const jo = code % 28;
-            result.push(cho[c] + jung[ju] + jong[jo]);
+            let romaji = (cho[c] + jung[ju] + jong[jo]).toLowerCase();
+            
+            // 앞글자가 한글인 경우에만 하이픈 추가
+            const prevCode = text.charCodeAt(i-1) - 44032;
+            if (i > 0 && prevCode >= 0 && prevCode <= 11171) {
+                result += "-" + romaji;
+            } else {
+                result += romaji;
+            }
         } else {
-            result.push(text[i]);
+            // 한글이 아닌 문자(Z, !, 공백 등)는 원본 그대로(대문자 유지) 추가
+            result += char;
         }
     }
-    return result.join('-').toLowerCase().replace(/- -/g, " ");
+    return result;
 }
 
 // --- [추가 2] 일본어 로마자 변환 (개정 헵번식, 장음 Ā, 촉음 ', n') ---
@@ -279,6 +257,11 @@ function getJapaneseRomaji(text) {
     if (!text) return "";
     if (text === "無に帰す光") return "munikisuhikari";
 
+    // 1. 전각 영숫자/기호를 반각으로 변환 (Ｚ -> Z)
+    let processed = text.replace(/[\uFF01-\uFF5E]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0));
+    // 2. 히라가나를 가타카나로 변환
+    processed = processed.replace(/[\u3041-\u3096]/g, s => String.fromCharCode(s.charCodeAt(0) + 0x60));
+    
     const map = {
         'ア':'a', 'イ':'i', 'ウ':'u', 'エ':'e', 'オ':'o',
         'カ':'ka', 'キ':'ki', 'ク':'ku', 'ケ':'ke', 'コ':'ko',
@@ -321,16 +304,16 @@ function getJapaneseRomaji(text) {
     const longVowelMarks = {'a':'ā','i':'ī','u':'ū','e':'ē','o':'ō'};
 
     let res = "";
-    for (let i = 0; i < text.length; i++) {
-        let char = text[i];
-        let next = text[i+1] || "";
-        if(/[a-zA-Z]/.test(char)) { res += char.toUpperCase(); continue; }
-        if (char === 'っ' || char === 'ッ') {
-            if (!next || /[あいうえおやゆよ]/.test(next)) { res += "'"; }
-            else {
-                let nR = map[text.substring(i+1, i+3)] || map[next] || "";
-                res += (nR.startsWith('ch')) ? 't' : (nR[0] || "");
-            }
+    for (let i = 0; i < processed.length; i++) {
+        let char = processed[i];
+        let next = processed[i+1] || "";
+
+        // 알파벳과 숫자는 대문자로 변환하여 유지
+        if(/[a-zA-Z0-9]/.test(char)) { res += char.toUpperCase(); continue; }
+
+        if (char === 'ッ') {
+            let nR = map[processed.substring(i+1, i+3)] || map[next] || "";
+            res += (nR.startsWith('ch')) ? 't' : (nR[0] || "");
             continue;
         }
         if (char === 'ー' && res.length > 0) {
@@ -338,15 +321,16 @@ function getJapaneseRomaji(text) {
             if (longVowelMarks[last]) res = res.slice(0, -1) + longVowelMarks[last];
             continue;
         }
-        let dual = map[text.substring(i, i+2)];
+
+        let dual = map[processed.substring(i, i+2)];
         if (dual) { res += dual; i++; }
         else {
-            let single = map[char] || char;
-            if (char === 'ん' || char === 'ン') {
-                let nR = map[text.substring(i+1, i+3)] || map[next] || "";
-                if (/[aiueoy]/.test(nR[0] || "")) single = "n'";
+            if (char === 'ン') {
+                let nR = map[processed.substring(i+1, i+3)] || map[next] || "";
+                res += (nR && /[aiueoy]/.test(nR[0])) ? "n'" : "n";
+            } else {
+                res += (map[char] || char).toLowerCase();
             }
-            res += (typeof single === 'string') ? single.toLowerCase() : single;
         }
     }
     return res;
