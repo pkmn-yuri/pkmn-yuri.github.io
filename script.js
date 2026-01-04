@@ -29,60 +29,55 @@ async function loadData() {
 
 // --- [수정] doTranslate 함수 (에러 시 초기화 및 레이아웃 최적화) ---
 async function doTranslate() {
-    // 1. 기본 입력값 (공백 제거)
+    // 1. 기본 입력값 (공백 제거) - 소문자화 금지
     let query = searchInput.value.trim();
     const category = categorySelect.value;
     const sourceLang = sourceLangSelect.value;
     const targetLang = targetLangSelect.value;
 
-    // 2. 언어별 쿼리 정제 로직 분기
-
     const pronHangeul = document.getElementById('pronHangeul') || pronunciationArea; 
     const pronRomaji = document.getElementById('pronRomaji'); 
 
-    // [중요] 새로운 검색 전 발음 영역 초기화 (에러 메시지 잔상 방지)
+    // 초기화
     pronHangeul.textContent = "";
     if(pronRomaji) pronRomaji.textContent = "";
     pronHangeul.style.display = "none";
     if(pronRomaji) pronRomaji.style.display = "none";
 
-    if (!category) { resultArea.textContent = '카테고리를 먼저 선택하세요.'; return; }
-    if (!sourceLang) { resultArea.textContent = '번역할 언어를 선택하세요.'; return; }
-    if (!targetLang) { resultArea.textContent = '번역될 언어를 선택하세요.'; return; }
+    if (!category || !sourceLang || !targetLang) { 
+        resultArea.textContent = '카테고리와 언어를 모두 선택하세요.'; 
+        return; 
+    }
     if (!masterDB[category]) { resultArea.textContent = '카테고리 오류'; return; }
 
-    // --- 언어별 맞춤 정제 로직 ---
-    // 2. 언어별 쿼리 정제 로직
+    // ⭐️ [핵심: 매칭 직전에 정제 수행] ⭐️
     if (sourceLang === 'ja') {
-        // [A] 반각 문자(!-~)를 전각으로 우선 변환 (z -> ｚ, Z -> Ｚ, 1 -> １)
+        // A. 반각을 전각으로 (z -> ｚ, 1 -> １)
         query = query.replace(/[!-~]/g, function(s) {
             return String.fromCharCode(s.charCodeAt(0) + 0xFEE0);
         });
-
-        // [B] 전각 소문자를 전각 대문자로 강제 변환 (ｚ -> Ｚ)
-        // 전각 소문자(0xFF41~0xFF5A)와 전각 대문자(0xFF21~0xFF3A)의 차이는 32(0x20)입니다.
+        // B. 전각 소문자를 전각 대문자로 (ｚ -> Ｚ)
         query = query.replace(/[\uFF41-\uFF5A]/g, function(s) {
             return String.fromCharCode(s.charCodeAt(0) - 0x20);
         });
-
-        // [C] 일반 반각 소문자가 남아있을 경우를 대비한 최종 대문자화
+        // C. 혹시 남은 반각 소문자 대문자로
         query = query.toUpperCase();
-        
+        // D. 공백도 전각으로 (DB가 전각 공백을 쓸 경우 대비)
+        query = query.replace(/ /g, "\u3000");
     } else {
-        // 일본어가 아닌 경우 소문자화
+        // 일본어가 아닐 때는 소문자 반각 기준
         query = query.toLowerCase();
     }
 
-    // 콘솔에서 변환된 최종 쿼리 확인 (F12 눌러서 확인 가능)
-    console.log("변환된 쿼리:", query);
-
-    // ... (이하 요소 초기화 및 masterDB 체크 로직 동일) ...
+    console.log("DB 매칭 쿼리:", query); // 브라우저 F12 콘솔에서 확인 가능
 
     const langMap = masterDB[category].map[sourceLang];
+    // 정제된 query로 DB 조회
     const resourceId = langMap ? langMap[query] : undefined;
 
     if (!resourceId) { resultArea.textContent = '결과 없음'; return; }
 
+    // ... (이후 translation 처리 로직은 동일)
     let translation;
     let reading = null; 
     let japaneseText = null; 
@@ -117,7 +112,6 @@ async function doTranslate() {
             if(pronRomaji) pronRomaji.style.display = "block";
         } 
         else if (targetLang === 'ko') {
-            // 한국어는 2열(pronHangeul)에 로마자 바로 표시
             pronHangeul.textContent = getKoreanRomaji(translation);
             pronHangeul.style.display = "block";
         }
