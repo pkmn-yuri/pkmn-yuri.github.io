@@ -39,6 +39,12 @@ async function doTranslate() {
     const resourceId = langMap ? langMap[query] : undefined;
     if (!resourceId) { resultArea.value = '결과 없음'; return; }
     let translation;
+    if (sourceLang === 'stats') {
+        // 이미 resourceId(예: adamant)를 찾았으므로, 목표 언어(targetLang)의 이름을 가져옵니다.
+        translation = await fetchFromApi(resourceId, category, 'en', targetLang); 
+    } else {
+        translation = await fetchFromApi(resourceId, category, sourceLang, targetLang);
+    }
     let reading = null; 
     let japaneseText = null; 
     if (typeof resourceId === 'string') {
