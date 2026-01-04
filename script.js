@@ -143,19 +143,23 @@ function transliterateJapanese(text) {
     let result = '';
     let lastCharWasLongVowel = false;
 
+    // ... (이전 코드 동일)
+
     for (let i = 0; i < convertedText.length; i++) {
         let char = convertedText[i];
         
-        // 3글자 복합
-        if (i + 2 < text.length && map[text.substring(i, i + 3)]) {
-            result += map[text.substring(i, i + 3)];
+        // 3글자 복합 (text -> convertedText 로 변경)
+        if (i + 2 < convertedText.length && map[convertedText.substring(i, i + 3)]) {
+            result += map[convertedText.substring(i, i + 3)];
             i += 2;
             lastCharWasLongVowel = false;
-        // 2글자 복합
-        } else if (i + 1 < text.length && map[text.substring(i, i + 2)]) {
-            result += map[text.substring(i, i + 2)];
+        // 2글자 복합 (text -> convertedText 로 변경)
+        } else if (i + 1 < convertedText.length && map[convertedText.substring(i, i + 2)]) {
+            result += map[convertedText.substring(i, i + 2)];
             i += 1;
             lastCharWasLongVowel = false;
+        
+        // ... (나머지 로직 동일)
         
         // ン (N) 처리
         } else if (char === 'ン') {
