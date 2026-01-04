@@ -137,31 +137,52 @@ html.dark #pronunciationArea {
     border-color: var(--border-color);
 }
 
-/* --- 7. 결과창(div) 전용 스타일 수정 (추가) --- */
-#resultArea {
-    /* 높이를 내용물에 맞게 자동 조절 */
-    height: auto !important; 
-    flex-grow: 0 !important; /* 남은 공간을 억지로 차지하지 않음 */
-    min-height: 100px;       /* 최소 높이 확보 */
-    
-    /* div 태그가 입력창처럼 보이게 설정 */
-    white-space: pre-wrap;   /* 줄바꿈 유지 */
-    overflow-y: auto;        /* 내용이 넘치면 스크롤 */
-    word-break: break-all;   /* 긴 단어 줄바꿈 */
-    
-    /* 텍스트 수직 정렬이 필요하다면 */
+/* --- 7. 결과창 레이아웃 수정 (박스 꽉 채우기 + 내용 위로 정렬) --- */
+
+/* 1) 겉을 감싸는 컨테이너가 '화면을 꽉 채우는 상자' 역할을 함 */
+.result-container {
+    flex-grow: 1;              /* 남은 공간을 모두 차지 (높이 유지) */
     display: flex;
-    align-items: center;     /* 내용이 적을 때 세로 중앙 정렬 (선택사항) */
-    align-items: flex-start; /* 보통은 위쪽 정렬 추천 */
+    flex-direction: column;    /* 세로 배치 */
+    background-color: var(--input-bg-color); /* 배경색 */
+    border: 1px solid var(--border-color);   /* 테두리 */
+    border-radius: 8px;        /* 둥근 모서리 */
+    padding: 12px;             /* 내부 여백 */
+    overflow-y: auto;          /* 내용이 아주 길어지면 스크롤 */
+    box-sizing: border-box;
 }
 
-/* div에는 placeholder 속성이 안 먹히므로 CSS로 흉내 내기 (내용이 비었을 때) */
+/* 2) 번역 결과 텍스트 (높이 강제 해제) */
+#resultArea {
+    width: 100%;
+    height: auto !important;   /* ⭐️ 핵심: 내용만큼만 높이 차지 */
+    min-height: auto;
+    flex-grow: 0 !important;   /* ⭐️ 핵심: 억지로 늘어나지 않음 */
+    border: none;              /* 테두리는 컨테이너에 있으므로 제거 */
+    background-color: transparent; /* 배경 투명 */
+    padding: 0;                /* 여백 제거 (컨테이너 패딩 사용) */
+    margin-bottom: 8px;        /* 발음과의 간격 */
+    white-space: pre-wrap;     /* 줄바꿈 유지 */
+    color: var(--text-color);
+    font-size: 1.2em;
+}
+
+/* 3) 발음 표시 영역 (스타일 초기화 및 정렬) */
+#pronunciationArea {
+    width: 100%;
+    height: auto;
+    min-height: 0;
+    flex-grow: 0;
+    border: none;              /* 테두리 제거 */
+    background-color: transparent;
+    padding: 0;
+    color: var(--secondary-text);
+    font-size: 0.9rem;
+    overflow-wrap: break-word; /* 긴 단어 줄바꿈 */
+}
+
+/* 4) (선택사항) 결과값이 비었을 때 placeholder 흉내내기 */
 #resultArea:empty::before {
     content: attr(placeholder);
     color: var(--secondary-text);
-}
-
-/* 타겟 박스 정렬 방식 보정 */
-#targetBox {
-    justify-content: flex-start; /* 내용물을 위쪽부터 차곡차곡 쌓음 */
 }
