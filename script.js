@@ -52,22 +52,29 @@ async function doTranslate() {
     if (!masterDB[category]) { resultArea.textContent = '카테고리 오류'; return; }
 
     // --- 언어별 맞춤 정제 로직 ---
+    // 2. 언어별 쿼리 정제 로직
     if (sourceLang === 'ja') {
-        // [일본어일 때]
-        // 1. 반각 문자(!-~)를 전각으로 변환 (Z -> Ｚ, 1 -> １)
+        // [A] 반각 문자(!-~)를 전각으로 우선 변환 (z -> ｚ, Z -> Ｚ, 1 -> １)
         query = query.replace(/[!-~]/g, function(s) {
             return String.fromCharCode(s.charCodeAt(0) + 0xFEE0);
         });
 
-        // 2. 모든 소문자를 대문자로 변환 (전각/반각 공통 적용)
-        // 이 과정에서 전각 소문자 'ｚ'도 전각 대문자 'Ｚ'가 됩니다.
+        // [B] 전각 소문자를 전각 대문자로 강제 변환 (ｚ -> Ｚ)
+        // 전각 소문자(0xFF41~0xFF5A)와 전각 대문자(0xFF21~0xFF3A)의 차이는 32(0x20)입니다.
+        query = query.replace(/[\uFF41-\uFF5A]/g, function(s) {
+            return String.fromCharCode(s.charCodeAt(0) - 0x20);
+        });
+
+        // [C] 일반 반각 소문자가 남아있을 경우를 대비한 최종 대문자화
         query = query.toUpperCase();
         
     } else {
-        // [일본어가 아닐 때 (영어, 한국어 등)]
-        // 기존처럼 소문자로 변환하여 매칭
+        // 일본어가 아닌 경우 소문자화
         query = query.toLowerCase();
     }
+
+    // 콘솔에서 변환된 최종 쿼리 확인 (F12 눌러서 확인 가능)
+    console.log("변환된 쿼리:", query);
 
     // ... (이하 요소 초기화 및 masterDB 체크 로직 동일) ...
 
