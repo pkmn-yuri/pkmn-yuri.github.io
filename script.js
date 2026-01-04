@@ -83,6 +83,11 @@ async function doTranslate() {
         // 초기화
         pronHangeul.textContent = "";
         if(pronRomaji) pronRomaji.textContent = "";
+        resultArea.style.borderBottomLeftRadius = "8px";
+        resultArea.style.borderBottomRightRadius = "8px";
+
+        if (translation && translation !== '결과 없음' && !translation.includes('오류')) {
+            resultArea.textContent = translation;
 
         if (targetLang === 'ja') {
             // 일본어: 2열에 한글 발음, 3열에 로마자
@@ -120,8 +125,11 @@ async function doTranslate() {
         resultArea.textContent = '결과 없음 (최종)';
         pronunciationArea.textContent = "";
         pronunciationArea.style.display = "none";
-        resultArea.style.borderBottomLeftRadius = "8px";
-        resultArea.style.borderBottomRightRadius = "8px";
+        resultArea.style.borderBottomLeftRadius = "0";
+        resultArea.style.borderBottomRightRadius = "0";
+    } else {
+        resultArea.textContent = translation || '결과 없음';
+        // 이 블록에 들어오면 이미 위에서 초기화했으므로 발음이 보이지 않음
     }
 }
 
@@ -260,24 +268,42 @@ function getKoreanRomaji(text) {
     const jong = ["","k","k","k","n","n","n","t","l","k","m","l","l","l","p","l","m","p","p","t","t","ng","t","t","k","t","p","t"];
 
     let result = [];
+    let result = "";
     for (let i = 0; i < text.length; i++) {
-        const code = text.charCodeAt(i) - 44032;
+        const char = text[i];
+        const code = char.charCodeAt(0) - 44032;
+
         if (code >= 0 && code <= 11171) {
             const c = Math.floor(code / 588);
             const ju = Math.floor((code % 588) / 28);
             const jo = code % 28;
-            result.push(cho[c] + jung[ju] + jong[jo]);
+            // 한글인 경우 변환 후 소문자화 + 앞글자가 한글이면 하이픈 추가
+            let romaji = (cho[c] + jung[ju] + jong[jo]).toLowerCase();
+            if (i > 0 && (text.charCodeAt(i-1) - 44032 >= 0 && text.charCodeAt(i-1) - 44032 <= 11171)) {
+                result += "-" + romaji;
+            } else {
+                result += romaji;
+            }
         } else {
-            result.push(text[i]);
+            // 한글이 아닌 경우(Z, !, 공백 등) 그대로 보존
+            result += char;
         }
     }
-    return result.join('-').toLowerCase().replace(/- -/g, " ");
+    return result;
 }
 
 // --- [추가 2] 일본어 로마자 변환 (개정 헵번식, 장음 Ā, 촉음 ', n') ---
 function getJapaneseRomaji(text) {
     if (!text) return "";
     if (text === "無に帰す光") return "munikisuhikari";
+
+    // 1. 전각 영숫자/기호를 반각으로 변환 (Ｚ -> Z)
+    let processed = text.replace(/[\uFF01-\uFF5E]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0));
+
+    // 1. 모든 히라가나를 가타카나로 먼저 변환 (로직 단순화)
+    let convertedText = text.replace(/[\u3041-\u3096]/g, function(s) {
+        return String.fromCharCode(s.charCodeAt(0) + 0x60);
+    });
 
     const map = {
         'ア':'a', 'イ':'i', 'ウ':'u', 'エ':'e', 'オ':'o',
@@ -321,12 +347,18 @@ function getJapaneseRomaji(text) {
     const longVowelMarks = {'a':'ā','i':'ī','u':'ū','e':'ē','o':'ō'};
 
     let res = "";
-    for (let i = 0; i < text.length; i++) {
-        let char = text[i];
-        let next = text[i+1] || "";
-        if(/[a-zA-Z]/.test(char)) { res += char.toUpperCase(); continue; }
-        if (char === 'っ' || char === 'ッ') {
-            if (!next || /[あいうえおやゆよ]/.test(next)) { res += "'"; }
+    let res = "";
+    for (let i = 0; i < processed.length; i++) {
+        let char = processed[i];
+        let next = processed[i + 1] || "";
+
+        // 알파벳/숫자/특수기호는 대문자로 고정 (요청사항 반영)
+        if (/[a-zA-Z0-9]/.test(char)) {
+            res += char.toUpperCase();
+            continue;
+        }
+        if (char === 'ッ') {
+            if (!next || /[アイウエオヤユヨ]/.test(next)) { res += "'"; }
             else {
                 let nR = map[text.substring(i+1, i+3)] || map[next] || "";
                 res += (nR.startsWith('ch')) ? 't' : (nR[0] || "");
@@ -342,11 +374,17 @@ function getJapaneseRomaji(text) {
         if (dual) { res += dual; i++; }
         else {
             let single = map[char] || char;
-            if (char === 'ん' || char === 'ン') {
-                let nR = map[text.substring(i+1, i+3)] || map[next] || "";
-                if (/[aiueoy]/.test(nR[0] || "")) single = "n'";
+            if (char === 'ン') {
+                let nR = map[convertedText.substring(i+1, i+3)] || map[next] || "";
+                if (nR && /[aiueoy]/.test(nR[0])) {
+                    res += "n'";
+                } else {
+                    res += "n";
+                }
+            } else {
+                // 일본어 맵에 있으면 변환, 없으면(한자 등) 원본 유지
+                res += map[char] ? map[char].toLowerCase() : char;
             }
-            res += (typeof single === 'string') ? single.toLowerCase() : single;
         }
     }
     return res;
