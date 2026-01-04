@@ -51,13 +51,21 @@ async function doTranslate() {
     if (!targetLang) { resultArea.textContent = '번역될 언어를 선택하세요.'; return; }
     if (!masterDB[category]) { resultArea.textContent = '카테고리 오류'; return; }
 
+    // --- 언어별 쿼리 정제 (이 부분을 교체하세요) ---
     if (sourceLang === 'ja') {
-        // 일본어일 때만: 반각 -> 전각 변환 + 대문자화
+        // 1. 우선 모든 영문을 대문자로 만듭니다. (반각/전각 모두 적용)
+        query = query.toUpperCase();
+
+        // 2. 반각 문자(숫자, 알파벳, 기호)를 전각으로 변환합니다.
+        // 범위: ! (0x21) ~ ~ (0x7E)
         query = query.replace(/[!-~]/g, function(s) {
             return String.fromCharCode(s.charCodeAt(0) + 0xFEE0);
-        }).toUpperCase();
+        });
+
+        // 3. 반각 공백도 전각 공백으로 변환 (필요한 경우)
+        query = query.replace(/ /g, "\u3000");
     } else {
-        // 그 외 언어(en, fr, ko 등): 모두 소문자화 (기본 정책)
+        // 기타 언어: 소문자화
         query = query.toLowerCase();
     }
 
