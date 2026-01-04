@@ -36170,6 +36170,29 @@
     "nature": {
         "db": {},
         "map": {
+  "stats": {
+    "B+ A-": "bold",
+    "C+ A-": "modest",
+    "D+ A-": "calm",
+    "S+ A-": "timid",
+    "A+ B-": "lonely",
+    "C+ B-": "mild",
+    "D+ B-": "gentle",
+    "S+ B-": "hasty",
+    "A+ C-": "adamant",
+    "B+ C-": "impish",
+    "D+ C-": "careful",
+    "C+ D-": "rash",
+    "S+ C-": "jolly",
+    "A+ D-": "naughty",
+    "B+ D-": "lax",
+    "S+ D-": "naive",
+    "A+ S-": "brave",
+    "B+ S-": "relaxed",
+    "C+ S-": "quiet",
+    "D+ S-": "sassy",
+    "-": "serious"
+  },
   "ko": {
     "노력": "hardy",
     "대담": "bold",
