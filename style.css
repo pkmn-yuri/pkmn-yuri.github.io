@@ -33,14 +33,36 @@ html, body {
 .translation-wrapper {
     flex-grow: 1; display: flex; flex-direction: column; gap: 15px; min-height: 0; align-items: center; 
 }
+/* 기존 .language-box 부분 수정 */
 .language-box {
-    background-color: var(--box-color); border: 1px solid var(--border-color); border-radius: 12px; padding: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); display: flex; flex-direction: column; width: 100%; gap: 10px; min-height: 0; flex-grow: 1; 
+    background-color: var(--box-color); 
+    border: 1px solid var(--border-color); 
+    border-radius: 12px; 
+    padding: 15px; 
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05); 
+    display: flex; 
+    flex-direction: column; 
+    width: 100%; 
+    gap: 0; /* ⭐️ gap을 10px에서 0으로 바꾸면 textarea와 발음영역이 찰싹 붙습니다 */
+    min-height: 0; 
+    flex-grow: 1; 
+}
+
+/* select 상단 여백을 위해 추가 */
+#targetLang, #sourceLang {
+    margin-bottom: 10px; /* select와 입력창 사이의 간격 유지 */
 }
 #searchInput, #resultArea {
     width: 100%; height: 100%; flex-grow: 1; padding: 12px; font-size: 1.2em; border: 1px solid var(--border-color); border-radius: 8px; box-sizing: border-box; background-color: var(--input-bg-color); color: var(--text-color); resize: none;
 }
 #searchInput:focus { outline: 2px solid var(--input-focus-border); border-color: transparent; }
-#resultArea { background-color: var(--result-bg-color); }
+/* 기존 #resultArea 부분을 아래와 같이 수정/보강 */
+#resultArea { 
+    background-color: var(--result-bg-color); 
+    border-bottom-left-radius: 0;   /* 발음 영역과 연결되도록 하단 둥글기 제거 */
+    border-bottom-right-radius: 0;
+    border-bottom: none;            /* 발음 영역과의 경계선 제거 (선택 사항) */
+}
 textarea::placeholder { color: var(--secondary-text); }
 
 /* 교환 버튼 (수정됨) */
@@ -92,4 +114,25 @@ textarea::placeholder { color: var(--secondary-text); }
     #searchInput, #resultArea {
         height: 100%;
     }
+}
+
+/* --- 6. 발음 표시 영역 (추가) --- */
+#pronunciationArea {
+    width: 100%;
+    min-height: 1.5rem;          /* 내용이 없을 때도 최소 높이 유지 */
+    padding: 0 12px 10px 12px;   /* 상단 0, 좌우 12px, 하단 10px */
+    font-size: 0.9rem;           /* 결과 텍스트(1.2em)보다 작은 크기 */
+    color: var(--secondary-text); /* 연한 회색 계열 */
+    background-color: var(--result-bg-color); /* 결과창과 동일한 배경색 */
+    border: 1px solid var(--border-color);
+    border-top: none;            /* 결과창과 이어지도록 상단 선 제거 */
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+    box-sizing: border-box;
+    overflow-wrap: break-word;   /* 긴 발음은 자동 줄바꿈 */
+}
+
+/* 다크모드 대응 (이미 root 변수를 사용하므로 색상은 자동으로 조절되지만, 미세 조정이 필요할 때 사용) */
+html.dark #pronunciationArea {
+    border-color: var(--border-color);
 }
