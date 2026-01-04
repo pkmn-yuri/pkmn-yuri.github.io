@@ -78,7 +78,6 @@ html, body {
     border-bottom-left-radius: 0 !important;
     border-bottom-right-radius: 0 !important;
     flex-grow: 0;
-    height: 120px;
 }
 textarea::placeholder { color: var(--secondary-text); }
 
