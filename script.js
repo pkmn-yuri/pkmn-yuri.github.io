@@ -21,7 +21,7 @@ async function loadData() {
         console.log('마스터 DB 로딩 성공!');
     } catch (error) {
         console.error('데이터 로딩 실패:', error);
-        resultArea.value = '오류: DB 로딩 실패';
+        resultArea.textContent = '오류: DB 로딩 실패';
     }
 }
 
@@ -32,13 +32,13 @@ async function doTranslate() {
     const category = categorySelect.value;
     const sourceLang = sourceLangSelect.value;
     const targetLang = targetLangSelect.value;
-    if (!category) { resultArea.value = '카테고리를 먼저 선택하세요.'; return; }
-    if (!sourceLang) { resultArea.value = '번역할 언어를 선택하세요.'; return; }
-    if (!targetLang) { resultArea.value = '번역될 언어를 선택하세요.'; return; }
-    if (!masterDB[category]) { resultArea.value = '카테고리 오류'; return; }
+    if (!category) { resultArea.textContent = '카테고리를 먼저 선택하세요.'; return; }
+    if (!sourceLang) { resultArea.textContent = '번역할 언어를 선택하세요.'; return; }
+    if (!targetLang) { resultArea.textContent = '번역될 언어를 선택하세요.'; return; }
+    if (!masterDB[category]) { resultArea.textContent = '카테고리 오류'; return; }
     const langMap = masterDB[category].map[sourceLang];
     const resourceId = langMap ? langMap[query] : undefined;
-    if (!resourceId) { resultArea.value = '결과 없음'; return; }
+    if (!resourceId) { resultArea.textContent = '결과 없음'; return; }
     let translation;
     let reading = null; 
     let japaneseText = null; 
@@ -72,7 +72,7 @@ async function doTranslate() {
 
     if (translation) {
         // 1. 번역 결과 입력
-        resultArea.value = translation;
+        resultArea.textContent = translation;
 
         // 2. 일본어 발음 처리
         if (targetLang === 'ja') {
@@ -106,7 +106,7 @@ async function doTranslate() {
             resultArea.style.borderBottomRightRadius = "8px";
         }
     } else {
-        resultArea.value = '결과 없음 (최종)';
+        resultArea.textContent = '결과 없음 (최종)';
         pronunciationArea.textContent = "";
         pronunciationArea.style.display = "none";
         resultArea.style.borderBottomLeftRadius = "8px";
@@ -266,7 +266,7 @@ swapButton.addEventListener('click', () => {
     targetLangSelect.value = sourceVal;
 
     const sourceText = searchInput.value;
-    let resultText = resultArea.value;
+    let resultText = resultArea.textContent;
 
     // 3. 에러 메시지 목록
     const isErrorOrPlaceholder = [
@@ -284,9 +284,9 @@ swapButton.addEventListener('click', () => {
             resultText = resultText.split(' (')[0];
         }
         searchInput.value = resultText;
-        resultArea.value = sourceText;
+        resultArea.textContent = sourceText;
     } else {
-        resultArea.value = '';
+        resultArea.textContent = '';
     }
 
     // ⭐️ 4. 발음 표시 영역 초기화 및 UI 복구 (추가된 부분)
