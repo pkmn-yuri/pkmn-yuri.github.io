@@ -159,52 +159,38 @@ html.dark #pronunciationArea {
     border-color: var(--border-color);
 }
 
-/* --- 7. 결과창 레이아웃 수정 (박스 꽉 채우기 + 내용 위로 정렬) --- */
-
-/* 1) 겉을 감싸는 컨테이너가 '화면을 꽉 채우는 상자' 역할을 함 */
+/* --- 7. 결과창 레이아웃 수정 --- */
 .result-container {
-    flex-grow: 1;              /* 남은 공간을 모두 차지 (높이 유지) */
+    flex-grow: 1;
     display: flex;
-    flex-direction: column;    /* 세로 배치 */
-    background-color: var(--input-bg-color); /* 배경색 */
-    border: 1px solid var(--border-color);   /* 테두리 */
-    border-radius: 8px;        /* 둥근 모서리 */
-    padding: 12px;             /* 내부 여백 */
-    overflow-y: auto;          /* 내용이 아주 길어지면 스크롤 */
+    flex-direction: column;
+    background-color: var(--result-bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 12px;
+    overflow-y: auto;
     box-sizing: border-box;
 }
 
-/* 2) 번역 결과 텍스트 (높이 강제 해제) */
 #resultArea {
     width: 100%;
-    height: auto !important;   /* ⭐️ 핵심: 내용만큼만 높이 차지 */
-    min-height: auto;
-    flex-grow: 0 !important;   /* ⭐️ 핵심: 억지로 늘어나지 않음 */
-    border: none;              /* 테두리는 컨테이너에 있으므로 제거 */
-    background-color: transparent; /* 배경 투명 */
-    padding: 0;                /* 여백 제거 (컨테이너 패딩 사용) */
-    margin-bottom: 8px;        /* 발음과의 간격 */
-    white-space: pre-wrap;     /* 줄바꿈 유지 */
+    margin-bottom: 4px;
+    font-size: 1.3rem;
+    font-weight: bold;
     color: var(--text-color);
-    font-size: 1.2em;
+    min-height: 1.5rem;
 }
 
-/* 3) 발음 표시 영역 (스타일 초기화 및 정렬) */
-#pronunciationArea {
+/* 발음 공통 스타일 (2, 3번째 줄) */
+.sub-reading {
     width: 100%;
-    height: auto;
-    min-height: 0;
-    flex-grow: 0;
-    border: none;              /* 테두리 제거 */
-    background-color: transparent;
-    padding: 0;
-    color: var(--secondary-text);
     font-size: 0.9rem;
-    overflow-wrap: break-word; /* 긴 단어 줄바꿈 */
+    color: var(--secondary-text);
+    line-height: 1.4;
+    word-break: break-all;
 }
 
-/* 4) (선택사항) 결과값이 비었을 때 placeholder 흉내내기 */
-#resultArea:empty::before {
-    content: attr(placeholder);
-    color: var(--secondary-text);
+/* 복사 버튼 위치 미세 조정 */
+.copy-btn {
+    margin-top: 10px;
 }
