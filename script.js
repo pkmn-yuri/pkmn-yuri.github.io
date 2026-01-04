@@ -51,21 +51,20 @@ async function doTranslate() {
     if (!masterDB[category]) { resultArea.textContent = '카테고리 오류'; return; }
 
     // ⭐️ [핵심: 매칭 직전에 정제 수행] ⭐️
+    // --- [수정된 핵심 로직: 전각 소문자 매칭] ---
     if (sourceLang === 'ja') {
-        // A. 반각을 전각으로 (z -> ｚ, 1 -> １)
+        // 1. 반각 문자(!-~)를 전각으로 변환 (z -> ｚ, 1 -> １)
         query = query.replace(/[!-~]/g, function(s) {
             return String.fromCharCode(s.charCodeAt(0) + 0xFEE0);
         });
-        // B. 전각 소문자를 전각 대문자로 (ｚ -> Ｚ)
-        query = query.replace(/[\uFF41-\uFF5A]/g, function(s) {
-            return String.fromCharCode(s.charCodeAt(0) - 0x20);
-        });
-        // C. 혹시 남은 반각 소문자 대문자로
-        query = query.toUpperCase();
-        // D. 공백도 전각으로 (DB가 전각 공백을 쓸 경우 대비)
+        // 2. 전각/반각 공통으로 소문자화 (Ｚ -> ｚ)
+        // 자바스크립트의 toLowerCase()는 전각 알파벳도 소문자로 잘 바꿔줍니다.
+        query = query.toLowerCase();
+        
+        // 3. 공백도 전각 공백으로 변환 (DB 키값이 전각 공백을 쓸 경우 대비)
         query = query.replace(/ /g, "\u3000");
     } else {
-        // 일본어가 아닐 때는 소문자 반각 기준
+        // 일본어가 아닐 때는 일반 소문자 반각 기준
         query = query.toLowerCase();
     }
 
