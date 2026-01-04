@@ -29,10 +29,30 @@ async function loadData() {
 
 // --- [수정] doTranslate 함수 (에러 시 초기화 및 레이아웃 최적화) ---
 async function doTranslate() {
-    const query = searchInput.value.trim().toLowerCase();
+    // 1. 기본 입력값 (공백 제거)
+    let query = searchInput.value.trim();
+    
     const category = categorySelect.value;
     const sourceLang = sourceLangSelect.value;
     const targetLang = targetLangSelect.value;
+
+    // 2. 언어별 쿼리 정제 로직 분기
+    if (sourceLang === 'ja') {
+        // 일본어일 때만: 반각 -> 전각 변환 + 대문자화
+        query = query.replace(/[!-~]/g, function(s) {
+            return String.fromCharCode(s.charCodeAt(0) + 0xFEE0);
+        }).toUpperCase();
+    } else {
+        // 그 외 언어(en, fr, ko 등): 모두 소문자화 (기본 정책)
+        query = query.toLowerCase();
+    }
+
+    // ... (이하 요소 초기화 및 masterDB 체크 로직 동일) ...
+
+    const langMap = masterDB[category].map[sourceLang];
+    const resourceId = langMap ? langMap[query] : undefined;
+
+    // ... (이하 결과 처리 로직) ...
 
     const pronHangeul = document.getElementById('pronHangeul') || pronunciationArea; 
     const pronRomaji = document.getElementById('pronRomaji'); 
