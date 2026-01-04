@@ -166,38 +166,57 @@ html.dark #pronunciationArea {
     border-color: var(--border-color);
 }
 
-/* --- 7. 결과창 레이아웃 수정 --- */
+/* --- 7. 결과창 레이아웃 수정 (완전 개편) --- */
 .result-container {
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-    background-color: var(--result-bg-color);
-    border: 1px solid var(--border-color);
+    /* 1. 입력창(textarea)과 똑같은 크기와 디자인 적용 */
+    width: 100%;
+    height: 100%; /* 부모 박스 높이를 꽉 채움 */
+    background-color: var(--input-bg-color); /* 배경색 통일 */
+    border: 1px solid var(--border-color); /* 테두리 통일 */
     border-radius: 8px;
     padding: 12px;
-    overflow-y: auto;
     box-sizing: border-box;
+    overflow-y: auto;
+    
+    /* 2. 내용물 정렬 (글자와 발음을 한 덩어리로) */
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start; /* 내용은 위에서부터 시작 (중앙 정렬 원하면 center) */
+    gap: 4px; /* 번역 결과와 발음 사이의 간격을 좁게 설정 */
 }
 
+/* 번역 결과 텍스트 */
 #resultArea {
     width: 100%;
-    margin-bottom: 4px;
-    font-size: 1.3rem;
+    font-size: 1.3rem; /* 입력창보다 조금 더 크게 강조 */
     font-weight: bold;
     color: var(--text-color);
-    min-height: 1.5rem;
+    background: transparent;
+    border: none; /* 내부 테두리 제거 */
+    margin: 0;
+    padding: 0;
+    flex-grow: 0; /* 크기 고정 (늘어나서 발음을 밀어내지 않음) */
 }
 
-/* 발음 공통 스타일 (2, 3번째 줄) */
+/* 안내 문구 (CSS로 처리) */
+#resultArea:empty::before {
+    content: "번역 결과...";
+    color: var(--secondary-text);
+    font-size: 1.1rem;
+    font-weight: normal;
+}
+
+/* 발음 표기 (글자 바로 밑에 붙는 스타일) */
 .sub-reading {
     width: 100%;
     font-size: 0.9rem;
-    color: var(--secondary-text);
+    color: var(--secondary-text); /* 연한 회색 */
     line-height: 1.4;
     word-break: break-all;
-}
-
-/* 복사 버튼 위치 미세 조정 */
-.copy-btn {
-    margin-top: 10px;
+    
+    /* 박스 스타일 제거 (텍스트처럼 보이게) */
+    background: transparent;
+    border: none;
+    padding: 0;
+    margin: 0;
 }
