@@ -74,24 +74,7 @@ html, body {
 #targetLang, #sourceLang {
     margin-bottom: 10px; /* select와 입력창 사이의 간격 유지 */
 }
-#searchInput, #resultArea {
-    width: 100%; height: 100%; flex-grow: 1; padding: 12px; font-size: 1.2em; border: 1px solid var(--border-color); border-radius: 8px; box-sizing: border-box; background-color: var(--input-bg-color); color: var(--text-color); resize: none;
-}
 #searchInput:focus { outline: 2px solid var(--input-focus-border); border-color: transparent; }
-/* 기존 #resultArea 부분을 아래와 같이 수정/보강 */
-/* 결과창이 비어있을 때만 글자를 보여줌 */
-#resultArea:empty::before {
-    content: "번역 결과...";
-    color: var(--secondary-text); /* 회색 톤 */
-    font-weight: normal;
-    font-size: 1.1rem;
-}
-#resultArea { 
-    background-color: var(--result-bg-color); 
-    border-bottom-left-radius: 0;   /* 발음 영역과 연결되도록 하단 둥글기 제거 */
-    border-bottom-right-radius: 0;
-    border-bottom: none;            /* 발음 영역과의 경계선 제거 (선택 사항) */
-}
 textarea::placeholder { color: var(--secondary-text); }
 
 /* 교환 버튼 (수정됨) */
@@ -145,78 +128,86 @@ textarea::placeholder { color: var(--secondary-text); }
     }
 }
 
-/* --- 6. 발음 표시 영역 (추가) --- */
-#pronunciationArea {
-    width: 100%;
-    min-height: 1.5rem;          /* 내용이 없을 때도 최소 높이 유지 */
-    padding: 0 12px 10px 12px;   /* 상단 0, 좌우 12px, 하단 10px */
-    font-size: 0.9rem;           /* 결과 텍스트(1.2em)보다 작은 크기 */
-    color: var(--secondary-text); /* 연한 회색 계열 */
-    background-color: var(--result-bg-color); /* 결과창과 동일한 배경색 */
-    border: 1px solid var(--border-color);
-    border-top: none;            /* 결과창과 이어지도록 상단 선 제거 */
-    border-bottom-left-radius: 8px;
-    border-bottom-right-radius: 8px;
-    box-sizing: border-box;
-    overflow-wrap: break-word;   /* 긴 발음은 자동 줄바꿈 */
-}
+/* --- [수정] 입력창과 결과창의 폰트 및 스타일 완전 통일 --- */
 
-/* 다크모드 대응 (이미 root 변수를 사용하므로 색상은 자동으로 조절되지만, 미세 조정이 필요할 때 사용) */
-html.dark #pronunciationArea {
-    border-color: var(--border-color);
-}
-
-/* --- 7. 결과창 레이아웃 수정 (완전 개편) --- */
-.result-container {
-    /* 1. 입력창(textarea)과 똑같은 크기와 디자인 적용 */
+/* 1. 입력창(textarea) 설정 */
+#searchInput {
     width: 100%;
-    height: 100%; /* 부모 박스 높이를 꽉 채움 */
-    background-color: var(--input-bg-color); /* 배경색 통일 */
-    border: 1px solid var(--border-color); /* 테두리 통일 */
-    border-radius: 8px;
+    height: 100%;
     padding: 12px;
     box-sizing: border-box;
-    overflow-y: auto;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background-color: var(--input-bg-color);
+    resize: none;
     
-    /* 2. 내용물 정렬 (글자와 발음을 한 덩어리로) */
+    /* 폰트 통일 핵심 */
+    font-family: inherit; /* 브라우저 기본 폰트 대신 페이지 폰트 사용 */
+    font-size: 1.3rem;    /* 크기 1.3rem으로 통일 */
+    font-weight: normal;  /* 두께 보통으로 통일 */
+    color: var(--text-color);
+    line-height: 1.5;
+}
+
+#searchInput:focus {
+    outline: 2px solid var(--input-focus-border);
+    border-color: transparent;
+}
+
+/* 2. 결과창 컨테이너 (입력창과 겉모습 똑같이 만들기) */
+.result-container {
+    width: 100%;
+    height: 100%;          /* 부모 높이 꽉 채움 */
+    padding: 12px;
+    box-sizing: border-box;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background-color: var(--input-bg-color); /* 입력창과 같은 배경색 */
+    overflow-y: auto;      /* 내용 넘치면 스크롤 */
+    
+    /* 내부 정렬 핵심: 위에서부터 차곡차곡 쌓기 */
     display: flex;
     flex-direction: column;
-    justify-content: flex-start; /* 내용은 위에서부터 시작 (중앙 정렬 원하면 center) */
-    gap: 4px; /* 번역 결과와 발음 사이의 간격을 좁게 설정 */
+    justify-content: flex-start; 
+    gap: 0px; /* 줄 간격 최소화 */
 }
 
-/* 번역 결과 텍스트 */
+/* 3. 번역 결과 텍스트 (입력창 텍스트와 똑같이 보이게) */
 #resultArea {
-    width: 100%;
-    font-size: 1.3rem; /* 입력창보다 조금 더 크게 강조 */
-    font-weight: bold;
+    /* 입력창과 폰트 속성 일치 */
+    font-family: inherit;
+    font-size: 1.3rem;
+    font-weight: normal; /* bold 제거 -> 입력창과 두께 통일 */
     color: var(--text-color);
+    line-height: 1.5;
+    
+    /* 위치 잡기 */
+    width: 100%;
+    height: auto;      /* 중요: 내용물만큼만 높이 차지 (꽉 채우지 않음) */
+    flex-grow: 0;      /* 중요: 남은 공간을 차지하려 들지 않음 */
     background: transparent;
-    border: none; /* 내부 테두리 제거 */
+    border: none;
     margin: 0;
     padding: 0;
-    flex-grow: 0; /* 크기 고정 (늘어나서 발음을 밀어내지 않음) */
+    margin-bottom: 2px; /* 발음과의 간격 살짝 */
 }
 
-/* 안내 문구 (CSS로 처리) */
+/* 안내 문구 스타일 */
 #resultArea:empty::before {
     content: "번역 결과...";
     color: var(--secondary-text);
-    font-size: 1.1rem;
-    font-weight: normal;
+    font-size: 1.1rem; /* placeholder와 비슷하게 */
 }
 
-/* 발음 표기 (글자 바로 밑에 붙는 스타일) */
+/* 4. 발음 표기 (텍스트 바로 밑에 붙음) */
 .sub-reading {
-    width: 100%;
     font-size: 0.9rem;
-    color: var(--secondary-text); /* 연한 회색 */
+    color: var(--secondary-text);
     line-height: 1.4;
     word-break: break-all;
     
-    /* 박스 스타일 제거 (텍스트처럼 보이게) */
-    background: transparent;
-    border: none;
-    padding: 0;
+    /* 불필요한 여백 제거 */
     margin: 0;
+    padding: 0;
+    flex-grow: 0;
 }
