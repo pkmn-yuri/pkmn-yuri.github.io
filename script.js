@@ -156,11 +156,6 @@ function transliterateJapanese(text) {
             result += map[text.substring(i, i + 2)];
             i += 1;
             lastCharWasLongVowel = false;
-        }
-        let doubleChar = conv.substring(i, i + 2);
-        if (map[doubleChar]) {
-            result += map[doubleChar];
-            i++; // 2글자를 처리했으므로 한 칸 더 건너뜀
         // ン (N) 처리
         } else if (char === 'ン') {
             let batchim = (lastCharWasLongVowel) ? '응' : 'ㄴ';
