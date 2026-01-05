@@ -418,19 +418,19 @@ function getChinesePinyin(text) {
     if (!pinyinDict || !text) return "";
     const pinyins = pinyinDict.data.split(',');
     
-    return text.split('').map(char => {
+    // 1. 먼저 병음들을 합쳐서 'result' 변수에 담습니다. (return 하지 않음)
+    let result = text.split('').map(char => {
         const code = char.charCodeAt(0);
         const index = code - pinyinDict.start;
-        
-        // 해당 인덱스에 발음 데이터가 실제 존재하는지 확인
         const pinyin = pinyins[index];
+        
         if (index >= 0 && index < pinyins.length && pinyin && pinyin !== "null") {
             return pinyin;
         }
-        return char; // 발음이 없으면 한자 그대로(예: 〇) 보여줌
+        return char;
     }).join(' ');
 
-    // [핵심] 결과물에서 전각 문자(!~￣)만 골라 반각으로 한 번에 변환
+    // 2. 변수에 담긴 문자열에서 전각 문자를 반각으로 변환한 뒤 최종 반환합니다.
     return result.replace(/[\uFF01-\uFF5E]/g, s => 
         String.fromCharCode(s.charCodeAt(0) - 0xFEE0)
     );
