@@ -28,61 +28,126 @@ async function loadData() {
 }
 
 // --- [수정] doTranslate 함수 (에러 시 초기화 및 레이아웃 최적화) ---
+// --- [수정] doTranslate: 통합 검색 및 자동 인식 탑재 ---
 async function doTranslate() {
-    // 1. 기본 입력값 (공백 제거) - 소문자화 금지
     let query = searchInput.value.trim();
-    const category = categorySelect.value;
-    const sourceLang = sourceLangSelect.value;
+    let category = categorySelect.value;     // 'all', 'pokemon', ...
+    let sourceLang = sourceLangSelect.value; // 'auto', 'ko', ...
     const targetLang = targetLangSelect.value;
 
-    const pronHangeul = document.getElementById('pronHangeul') || pronunciationArea; 
-    const pronRomaji = document.getElementById('pronRomaji'); 
+    const pronHangeul = document.getElementById('pronHangeul') || pronunciationArea;
+    const pronRomaji = document.getElementById('pronRomaji');
 
     // 초기화
     pronHangeul.textContent = "";
-    if(pronRomaji) pronRomaji.textContent = "";
+    if (pronRomaji) pronRomaji.textContent = "";
     pronHangeul.style.display = "none";
-    if(pronRomaji) pronRomaji.style.display = "none";
+    if (pronRomaji) pronRomaji.style.display = "none";
 
-    if (!category || !sourceLang || !targetLang) { 
-        resultArea.textContent = '카테고리와 언어를 모두 선택하세요.'; 
-        return; 
+    // 1. 필수 조건 체크 (도착 언어는 필수)
+    if (!targetLang) {
+        resultArea.textContent = '번역될 언어(도착 언어)를 선택해주세요.';
+        return;
     }
-    if (!masterDB[category]) { resultArea.textContent = '카테고리 오류'; return; }
+    if (!query) return; // 검색어 없으면 조용히 리턴
 
-    // ⭐️ [핵심: 매칭 직전에 정제 수행] ⭐️
-    // --- [수정된 핵심 로직: 전각 소문자 매칭] ---
-    if (sourceLang === 'ja' || sourceLang.startsWith('zh')) {
-        // 1. 반각 문자(!-~)를 전각으로 변환 (z -> ｚ, 1 -> １)
-        query = query.replace(/[!-~]/g, function(s) {
-            return String.fromCharCode(s.charCodeAt(0) + 0xFEE0);
-        });
-        // 2. 전각/반각 공통으로 소문자화 (Ｚ -> ｚ)
-        // 자바스크립트의 toLowerCase()는 전각 알파벳도 소문자로 잘 바꿔줍니다.
-        query = query.toLowerCase();
+    // ---------------------------------------------------------
+    // ⭐️ [신규 기능] 통합 검색 및 언어 자동 감지 로직
+    // ---------------------------------------------------------
+    let foundId = null;
+    let detectedCategory = null;
+    let detectedLang = null;
+
+    // 카테고리가 'all'이거나 언어가 'auto'라면 전수 조사 시작
+    if (category === 'all' || sourceLang === 'auto') {
+        // 검색 대상 카테고리 범위 설정
+        const categoriesToSearch = (category === 'all') 
+            ? Object.keys(masterDB) 
+            : [category];
+
+        // 루프: 카테고리 -> 언어 -> 검색어 매칭
+        searchLoop:
+        for (const cat of categoriesToSearch) {
+            if (!masterDB[cat] || !masterDB[cat].map) continue;
+            
+            // 검색 대상 언어 범위 설정
+            // (언어가 'auto'면 해당 카테고리의 모든 언어 맵을 뒤짐)
+            const langsToSearch = (sourceLang === 'auto') 
+                ? Object.keys(masterDB[cat].map) 
+                : [sourceLang];
+
+            for (const lang of langsToSearch) {
+                const map = masterDB[cat].map[lang];
+                if (!map) continue;
+
+                // [중요] 언어별 입력값 보정 (전각/반각 등)
+                let processedQuery = query;
+                if (lang === 'ja' || lang.startsWith('zh')) {
+                    processedQuery = processedQuery.replace(/[!-~]/g, s => String.fromCharCode(s.charCodeAt(0) + 0xFEE0));
+                    processedQuery = processedQuery.toLowerCase();
+                    processedQuery = processedQuery.replace(/ /g, "\u3000");
+                } else {
+                    processedQuery = processedQuery.toLowerCase();
+                }
+
+                // 맵에서 검색
+                if (map[processedQuery]) {
+                    foundId = map[processedQuery];
+                    detectedCategory = cat;
+                    detectedLang = lang;
+                    
+                    // 하나라도 찾으면 루프 종료 (우선순위: 데이터 순서대로)
+                    // 필요하다면 여기서 멈추지 않고 리스트를 만들 수도 있습니다.
+                    break searchLoop; 
+                }
+            }
+        }
+
+        // 검색 실패 시
+        if (!foundId) {
+            resultArea.textContent = '결과를 찾을 수 없습니다.';
+            return;
+        }
+
+        // 검색 성공! 감지된 정보로 변수 업데이트
+        // (이후 로직은 기존과 동일하게 흘러갑니다)
+        category = detectedCategory;
+        sourceLang = detectedLang;
         
-        // 3. 공백도 전각 공백으로 변환 (DB 키값이 전각 공백을 쓸 경우 대비)
-        query = query.replace(/ /g, "\u3000");
-    } else {
-        // 일본어/중국어가 아닐 때는 일반 소문자 반각 기준
-        query = query.toLowerCase();
+        // (선택) UX: 사용자가 뭘 찾았는지 알 수 있게 UI를 잠시 바꿔줄 수도 있음
+        console.log(`자동 감지됨: [${category}] ${sourceLang} -> ID: ${foundId}`);
+    } 
+    else {
+        // 기존 단일 검색 로직 (사용자가 카테고리/언어를 명확히 지정한 경우)
+        // 기존과 동일한 전처리 로직 수행
+        if (sourceLang === 'ja' || sourceLang.startsWith('zh')) {
+            query = query.replace(/[!-~]/g, s => String.fromCharCode(s.charCodeAt(0) + 0xFEE0));
+            query = query.toLowerCase();
+            query = query.replace(/ /g, "\u3000");
+        } else {
+            query = query.toLowerCase();
+        }
+        
+        if (masterDB[category] && masterDB[category].map[sourceLang]) {
+            foundId = masterDB[category].map[sourceLang][query];
+        }
+    }
+    // ---------------------------------------------------------
+
+    if (!foundId) {
+        resultArea.textContent = '결과 없음';
+        return;
     }
 
-    console.log("DB 매칭 쿼리:", query); // 브라우저 F12 콘솔에서 확인 가능
-
-    const langMap = masterDB[category].map[sourceLang];
-    // 정제된 query로 DB 조회
-    const resourceId = langMap ? langMap[query] : undefined;
-
-    if (!resourceId) { resultArea.textContent = '결과 없음'; return; }
-
-    // ... (이후 translation 처리 로직은 동일)
+    // --- 이하 기존 번역 표시 로직 (그대로 유지) ---
+    // foundId, category, sourceLang, targetLang 정보로 결과 출력
+    
     let translation;
     let reading = null; 
     let japaneseText = null; 
 
-    if (typeof resourceId === 'string' || typeof resourceId === 'number') {
-        const localEntry = masterDB[category].db[resourceId];
+    if (typeof foundId === 'string' || typeof foundId === 'number') {
+        const localEntry = masterDB[category].db[foundId];
         if (localEntry) {
             translation = localEntry[targetLang];
             if (targetLang === 'ja') {
@@ -91,13 +156,19 @@ async function doTranslate() {
             }
         }
         if (!translation) { 
-            translation = await fetchFromApi(resourceId, category, sourceLang, targetLang);
+            translation = await fetchFromApi(foundId, category, sourceLang, targetLang);
             if (targetLang === 'ja') japaneseText = translation;
         }
     }
 
     if (translation && translation !== '결과 없음' && !translation.includes('오류')) {
-        resultArea.textContent = translation;
+        // [수정] 통합 검색 시 카테고리 뱃지 표시 (선택사항)
+        if (categorySelect.value === 'all') {
+            const catName = category === 'pokemon' ? '포켓몬' : (category === 'move' ? '기술' : '도구');
+            resultArea.innerHTML = `<span style="font-size:0.6em; color:#888; display:block; margin-bottom:4px;">[${catName}]</span>${translation}`;
+        } else {
+            resultArea.textContent = translation;
+        }
         
         if (targetLang === 'ja') {
             if (japaneseText === '無に帰す光') {
@@ -111,19 +182,11 @@ async function doTranslate() {
             if(pronRomaji) pronRomaji.style.display = "block";
         } 
         else if (targetLang.startsWith('zh')) { 
-            // 1. 사전 데이터 로딩 (비동기)
             await loadPinyinData(); 
-
-            // 2. 한자 -> 성조 병음 추출 (3행)
             const pinyin = getChinesePinyin(translation);
-            
-            // 3. 성조 병음 -> 한글 발음 변환 (2행)
             const hangeul = getChineseHangeul(pinyin);
-
-            // 4. 화면 출력
             pronHangeul.textContent = hangeul;
             if(pronRomaji) pronRomaji.textContent = pinyin;
-            
             pronHangeul.style.display = "block";
             if(pronRomaji) pronRomaji.style.display = "block";
         }
@@ -580,58 +643,64 @@ searchInput.addEventListener('keydown', function(event) { if (event.key === 'Ent
 function syncLanguages() { const sourceVal = sourceLangSelect.value; const targetVal = targetLangSelect.value; for (const option of targetLangSelect.options) { if (option.value && option.value === sourceVal) option.disabled = true; else option.disabled = false; } for (const option of sourceLangSelect.options) { if (option.value && option.value === targetVal) option.disabled = true; else option.disabled = false; } }
 sourceLangSelect.addEventListener('change', syncLanguages); targetLangSelect.addEventListener('change', syncLanguages);
 swapButton.addEventListener('click', () => {
-    const sourceVal = sourceLangSelect.value;
-    const targetVal = targetLangSelect.value;
+    // 1. 현재 설정 값 가져오기
+    const currentSource = sourceLangSelect.value;
+    const currentTarget = targetLangSelect.value;
 
-    // 2. 언어 설정 교체
-    sourceLangSelect.value = targetVal;
-    targetLangSelect.value = sourceVal;
+    // 2. 언어 교체 로직
+    // 입력 언어가 'auto'였더라도, swap을 하면 방금 결과를 본 언어(currentTarget)가 명확한 소스가 됩니다.
+    sourceLangSelect.value = currentTarget;
+    
+    // 요청하신 부분: "결과 언어는 비어지는 형식"
+    // HTML에 <option value="">선택</option> 같은 빈 값이 있다면 ""로, 없다면 가장 첫번째나 특정 값으로 설정해야 합니다.
+    // 여기서는 UI상 '선택 안 됨' 상태를 만들기 위해 value를 비웁니다. (HTML select에 빈 value 옵션이 있어야 깔끔합니다)
+    targetLangSelect.value = ""; 
 
-    const sourceText = searchInput.value;
-    let resultText = resultArea.textContent;
-
-    // 3. 에러 메시지 목록
-    const isErrorOrPlaceholder = [
-        '결과 없음', '카테고리 오류', '해당 언어 데이터 없음', 'API 검색 중...', 
-        '오류: API 연결 실패', '해당 언어 데이터 없음 (API)', '카테고리를 먼저 선택하세요.', 
-        '번역할 언어를 선택하세요.', '번역될 언어를 선택하세요.', 
-        '이 카테고리는 도감번호를 지원하지 않습니다.', '결과 없음 (최종)', 
-        '유효하지 않은 ID', '로컬 DB에 dex_id 없음'
-    ].includes(resultText.trim());
-
-    // 4. 텍스트 스왑 실행
-    if (!isErrorOrPlaceholder && resultText.trim() !== '') {
-        // 이제 발음이 따로 분리되었으므로 괄호 제거 로직은 안전장치로만 남겨둡니다.
-        if (resultText.includes(' (')) {
-            resultText = resultText.split(' (')[0];
-        }
-        searchInput.value = resultText;
-        resultArea.textContent = sourceText;
-    } else {
-        resultArea.textContent = '';
+    // 3. 텍스트 이동 (결과창 -> 입력창)
+    // 결과창에 뱃지([포켓몬] 등)가 있다면 텍스트만 발라냅니다.
+    let resultText = resultArea.innerText; 
+    if (resultText.includes('\n')) {
+        // [포켓몬]\n피카츄 형태라면 뒤에꺼만 가져옴
+        const parts = resultText.split('\n');
+        resultText = parts[parts.length - 1];
     }
-
-    // 발음 영역 초기화 추가
+    
+    searchInput.value = resultText;
+    
+    // 4. 결과창 및 발음창 초기화
+    resultArea.textContent = ""; 
     const pronHangeul = document.getElementById('pronHangeul') || pronunciationArea;
     const pronRomaji = document.getElementById('pronRomaji');
-    
-    if (pronHangeul) pronHangeul.textContent = "";
-    if (pronRomaji) pronRomaji.textContent = "";
-    
-    // UI 복구
-    resultArea.style.borderBottomLeftRadius = "8px";
-    resultArea.style.borderBottomRightRadius = "8px";
-    
-    syncLanguages();
-    // 복사 버튼 텍스트 초기화 (혹시 복사 직후에 스왑할 경우 대비)
+    if (pronHangeul) { pronHangeul.textContent = ""; pronHangeul.style.display = "none"; }
+    if (pronRomaji) { pronRomaji.textContent = ""; pronRomaji.style.display = "none"; }
+
+    // 5. 버튼 텍스트 복구
     copySourceBtn.textContent = "Copy";
     copyTargetBtn.textContent = "Copy";
+    
+    // 언어 선택박스 활성/비활성 동기화
+    syncLanguages();
 });
 function applyTheme(theme) { if (theme === 'dark') { htmlEl.classList.add('dark'); themeToggle.textContent = '🌙'; } else { htmlEl.classList.remove('dark'); themeToggle.textContent = '☀️'; } }
 function setInitialTheme() { const savedTheme = localStorage.getItem('theme'); if (savedTheme) { applyTheme(savedTheme); } else { const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches; applyTheme(prefersDark ? 'dark' : 'light'); } }
 themeToggle.addEventListener('click', () => { const isDark = htmlEl.classList.contains('dark'); const newTheme = isDark ? 'light' : 'dark'; applyTheme(newTheme); localStorage.setItem('theme', newTheme); });
 window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (event) => { const savedTheme = localStorage.getItem('theme'); if (!savedTheme) { applyTheme(event.matches ? 'dark' : 'light'); } });
-function handleCategoryChange() { const category = categorySelect.value; const isPokemon = (category === 'pokemon'); const isNature = (category === 'nature'); const dexOptions = document.querySelectorAll('.pokemon-only-option'); dexOptions.forEach(option => { option.hidden = !isPokemon; }); document.querySelectorAll('.nature-only-option').forEach(option => { option.hidden = !isNature; }); if (!isPokemon) { if (sourceLangSelect.value === 'dex_id') sourceLangSelect.value = ""; if (targetLangSelect.value === 'dex_id') targetLangSelect.value = ""; } if (!isNature) { if (sourceLangSelect.value === 'stats') sourceLangSelect.value = ""; if (targetLangSelect.value === 'stats') targetLangSelect.value = ""; } syncLanguages(); }
+function handleCategoryChange() {
+    const category = categorySelect.value;
+    // all일 때도 기본적으로 다 숨기는 게 깔끔합니다.
+    const isPokemon = (category === 'pokemon');
+    const isNature = (category === 'nature');
+
+    const dexOptions = document.querySelectorAll('.pokemon-only-option');
+    dexOptions.forEach(option => { option.hidden = !isPokemon; });
+
+    document.querySelectorAll('.nature-only-option').forEach(option => { 
+        option.hidden = !isNature; 
+    });
+
+    // 카테고리가 바뀌면 언어 선택창 동기화 한 번 실행
+    syncLanguages();
+}
 categorySelect.addEventListener('change', handleCategoryChange);
 loadData();
 syncLanguages();
