@@ -750,18 +750,28 @@ themeToggle.addEventListener('click', () => { const isDark = htmlEl.classList.co
 window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (event) => { const savedTheme = localStorage.getItem('theme'); if (!savedTheme) { applyTheme(event.matches ? 'dark' : 'light'); } });
 function handleCategoryChange() {
     const category = categorySelect.value;
-    // all일 때도 기본적으로 다 숨기는 게 깔끔합니다.
     const isPokemon = (category === 'pokemon');
     const isNature = (category === 'nature');
+    const isAll = (category === 'all'); // 통합 검색 여부 추가
 
+    // 1. 도감 번호 옵션 표시 (포켓몬 전용이거나 'All'일 때)
     const dexOptions = document.querySelectorAll('.pokemon-only-option');
-    dexOptions.forEach(option => { option.hidden = !isPokemon; });
-
-    document.querySelectorAll('.nature-only-option').forEach(option => { 
-        option.hidden = !isNature; 
+    dexOptions.forEach(option => { 
+        option.hidden = !(isPokemon || isAll); 
     });
 
-    // 카테고리가 바뀌면 언어 선택창 동기화 한 번 실행
+    // 2. 능력치 변화 옵션 표시 (성격 전용이거나 'All'일 때)
+    document.querySelectorAll('.nature-only-option').forEach(option => { 
+        option.hidden = !(isNature || isAll); 
+    });
+
+    // 3. 만약 'All'도 아니고 전용 카테고리도 아닌데 해당 옵션이 선택되어 있다면 초기화
+    if (!isPokemon && !isAll && sourceLangSelect.value === 'dex_id') sourceLangSelect.value = "auto";
+    if (!isPokemon && !isAll && targetLangSelect.value === 'dex_id') targetLangSelect.value = "";
+    
+    if (!isNature && !isAll && sourceLangSelect.value === 'stats') sourceLangSelect.value = "auto";
+    if (!isNature && !isAll && targetLangSelect.value === 'stats') targetLangSelect.value = "";
+
     syncLanguages();
 }
 categorySelect.addEventListener('change', handleCategoryChange);
