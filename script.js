@@ -58,45 +58,6 @@ async function doTranslate() {
     let detectedLang = null;
 
     if (category === 'all' || sourceLang === 'auto') {
-        
-        // =========================================================
-        // 1. [INPUT] 특수 패턴(도감번호/능력치) 우선 감지 로직 (All 모드 전용)
-        // =========================================================
-        if (category === 'all') {
-            // A. 도감 번호 인식 (숫자로만 이루어진 경우)
-            if (/^\d+$/.test(query)) {
-                foundId = query;
-                detectedCategory = 'pokemon';
-                detectedLang = 'dex_id'; // 입력 언어를 도감번호로 간주
-                // 루프 없이 즉시 확정
-                lastDetectedLang = 'dex_id'; // 스왑용 저장
-            } 
-            // B. 성격 능력치 인식 (예: "A+ C-", "S+ A-" 등)
-            // 정규식: (A,B,C,D,S) 뒤에 (+,-)가 오고, 공백 후 다시 반복되는 패턴
-            else if (/^[ABCDS][+-]\s*[ABCDS][+-]$/i.test(query)) {
-                // 성격 데이터베이스를 역추적하여 ID 찾기 (조금 복잡하지만 순회 검색)
-                if (masterDB['nature'] && masterDB['nature'].db) {
-                    const natureDB = masterDB['nature'].db;
-                    // 모든 성격을 뒤져서 해당 stats를 가진 ID를 찾음
-                    for (const [id, data] of Object.entries(natureDB)) {
-                        // DB에 stats 필드가 없으면 계산 (fetchFromApi 로직과 유사하게 처리 필요하지만
-                        // 여기선 로컬 DB에 미리 정의된 규칙을 역산하거나 API 로직 활용해야 함.
-                        // 편의상 'up/down' 데이터가 로컬 DB에 있다고 가정하고 매칭합니다.
-                        // 만약 로컬 DB에 stat 정보가 없다면 이 부분은 API 호출이 필요해 복잡해집니다.
-                        // **가장 쉬운 방법**: 사용자가 'stats'라고 입력했을 때를 대비해 로컬 맵핑을 만드는 것입니다.
-                        // 여기서는 간단히 로직 흐름만 잡습니다.
-                        
-                        // (참고) 로컬 DB에 stats 정보가 없다면 이 B블록은 스킵됩니다.
-                    }
-                }
-                // *간단 구현*: 일단 'nature' 카테고리의 'stats' 언어로 간주하고 넘깁니다.
-                // 실제 값 매칭은 아래 루프나 별도 로직이 필요하지만, 
-                // 보통 'A+ C-'를 입력값으로 검색하는 경우는 드물어서
-                // 여기서는 "입력이 stats 형식이면 nature로 잡는다"는 분류만 수행합니다.
-                detectedCategory = 'nature';
-                detectedLang = 'stats';
-            }
-        }
 
         // 위에서 특수 패턴(숫자 등)으로 감지되지 않았다면 일반 텍스트 검색 시작
         if (!foundId && !detectedCategory) {
