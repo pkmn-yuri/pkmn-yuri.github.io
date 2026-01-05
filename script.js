@@ -627,7 +627,28 @@ copySourceBtn.addEventListener('click', () => {
 
 // 도착어 복사 버튼 이벤트 (div 사용)
 copyTargetBtn.addEventListener('click', () => {
-    copyToClipboard(resultArea.textContent, copyTargetBtn);
+    let textToCopy = resultArea.innerText;
+
+    // [수정] 통합 검색 시 추가된 카테고리 뱃지 제거 로직
+    // 뱃지는 보통 첫 줄에 [카테고리] 형태로 들어가고 줄바꿈(\n)이 생깁니다.
+    if (textToCopy.includes('\n')) {
+        const lines = textToCopy.split('\n');
+        // 마지막 줄이 실제 번역 결과이므로 마지막 요소만 선택
+        textToCopy = lines[lines.length - 1].trim();
+    }
+
+    // 예외 처리: 결과가 비어있거나 안내 문구인 경우 복사 방지
+    if (!textToCopy || textToCopy === '결과 없음' || textToCopy.includes('선택해주세요')) {
+        return;
+    }
+
+    navigator.clipboard.writeText(textToCopy).then(() => {
+        const originalText = copyTargetBtn.textContent;
+        copyTargetBtn.textContent = "Copied!";
+        setTimeout(() => {
+            copyTargetBtn.textContent = originalText;
+        }, 1500);
+    });
 });
 
 // (기존 코드들)
