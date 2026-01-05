@@ -637,18 +637,17 @@ copyTargetBtn.addEventListener('click', () => {
         textToCopy = lines[lines.length - 1].trim();
     }
 
-    // 예외 처리: 결과가 비어있거나 안내 문구인 경우 복사 방지
-    if (!textToCopy || textToCopy === '결과 없음' || textToCopy.includes('선택해주세요')) {
+    // 예외 처리: 결과가 비어있거나 안내 문구 혹은 초기 문구인 경우 복사 방지
+    if (!textToCopy || 
+        textToCopy === '결과 없음' || 
+        textToCopy === '번역 결과...' || 
+        textToCopy === '결과 없음 (최종)' || 
+        textToCopy.includes('선택해주세요')) {
         return;
     }
 
-    navigator.clipboard.writeText(textToCopy).then(() => {
-        const originalText = copyTargetBtn.textContent;
-        copyTargetBtn.textContent = "Copied!";
-        setTimeout(() => {
-            copyTargetBtn.textContent = originalText;
-        }, 1500);
-    });
+    // ⭐️ 정의해둔 copyToClipboard 함수를 호출하여 텍스트 복사와 색상 피드백을 한 번에 처리
+    copyToClipboard(textToCopy, copyTargetBtn);
 });
 
 // (기존 코드들)
