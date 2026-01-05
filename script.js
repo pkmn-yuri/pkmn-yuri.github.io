@@ -64,7 +64,7 @@ async function doTranslate() {
         // 3. 공백도 전각 공백으로 변환 (DB 키값이 전각 공백을 쓸 경우 대비)
         query = query.replace(/ /g, "\u3000");
     } else {
-        // 일본어가 아닐 때는 일반 소문자 반각 기준
+        // 일본어/중국어가 아닐 때는 일반 소문자 반각 기준
         query = query.toLowerCase();
     }
 
@@ -313,7 +313,7 @@ function getJapaneseRomaji(text) {
     let processed = text.replace(/[\uFF01-\uFF5E]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0));
     // 2. 히라가나를 가타카나로 변환
     processed = processed.replace(/[\u3041-\u3096]/g, s => String.fromCharCode(s.charCodeAt(0) + 0x60));
-    
+
     const map = {
         'ア':'a', 'イ':'i', 'ウ':'u', 'エ':'e', 'オ':'o',
         'カ':'ka', 'キ':'ki', 'ク':'ku', 'ケ':'ke', 'コ':'ko',
@@ -429,6 +429,11 @@ function getChinesePinyin(text) {
         }
         return char; // 발음이 없으면 한자 그대로(예: 〇) 보여줌
     }).join(' ');
+
+    // [핵심] 결과물에서 전각 문자(!~￣)만 골라 반각으로 한 번에 변환
+    return result.replace(/[\uFF01-\uFF5E]/g, s => 
+        String.fromCharCode(s.charCodeAt(0) - 0xFEE0)
+    );
 }
 
 // [2행용: 성조 병음 -> 한글 발음]
@@ -436,7 +441,17 @@ function getChineseHangeul(pinyinWithTone) {
     if (!pinyinWithTone) return "";
 
     return pinyinWithTone.split(' ').map(py => {
+        // 1. 병음 성조 기호가 있는지 확인하는 정규식
+        const hasTone = /[āáǎàēéěèīíǐìōóǒòūúǔùüǘǚǜǖêếề]/.test(py);
+
+        // 2. 성조가 없는 순수 알파벳/기호라면 원본(py) 그대로 반환 (대소문자 유지)
+        if (!hasTone) {
+            return py; 
+        }
+
+        // 3. 성조가 있는 '병음'일 때만 소문자로 바꿔서 한글 합성 진행
         let raw = py.split('').map(c => PINYIN_TONE_MAP[c] || c).join('').toLowerCase();
+        
         let sm = "", um = "";
         const smList = ["zh", "ch", "sh", "b", "p", "m", "f", "d", "t", "n", "l", "g", "k", "h", "j", "q", "x", "r", "z", "c", "s"];
         
@@ -444,7 +459,8 @@ function getChineseHangeul(pinyinWithTone) {
             if (raw.startsWith(s)) { sm = s; um = raw.substring(s.length); break; }
         }
         if (!sm) um = raw; 
-
+        
+        // ... 이하 smMap, umMap, assembleHangeul 호출 로직 동일 ...
         const smMap = {'b':'ㅂ','p':'ㅍ','m':'ㅁ','f':'ㅍ','d':'ㄷ','t':'ㅌ','n':'ㄴ','l':'ㄹ','g':'ㄱ','k':'ㅋ','h':'ㅎ','j':'ㅈ','q':'ㅊ','x':'ㅅ','zh':'ㅈ','ch':'ㅊ','sh':'ㅅ','r':'ㄹ','z':'ㅉ','c':'ㅊ','s':'ㅆ'};
         let hangeulUm = "";
 
