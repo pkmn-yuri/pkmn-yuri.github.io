@@ -13156,7 +13156,7 @@
                 "zh-Hant": "歸無之光"
             },
             "guard-swap": { "ko": "가드스왑" },
-            "snatch": { "ko": "가로채기" },
+            "snatch": { "ko": "가로채기", "zh-Hans": "化为己用" },
             "bullet-seed": { "ko": "씨기관총" },
             "brick-break": { "ko": "깨트리기" },
             "hyperspace-fury": { "ko": "이차원러시" },
@@ -13202,8 +13202,9 @@
             "slack-off": { "ko": "게으름피우기" },
             "power-swap": { "ko": "파워스왑" },
             "quick-guard": { "ko": "패스트가드" },
-            "heart-swap": { "ko": "하트스왑" },
+            "heart-swap": { "ko": "하트스왑", "es": "Cambiaalmas" },
             "flame-wheel": { "ko": "화염바퀴" }
+            "conversion-2": { "es": "Conversión 2", "de": "Umwandlung 2" }
         },
         "map": {
   "ko": {
