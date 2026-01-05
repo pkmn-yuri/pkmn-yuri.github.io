@@ -417,10 +417,17 @@ async function loadPinyinData() {
 function getChinesePinyin(text) {
     if (!pinyinDict || !text) return "";
     const pinyins = pinyinDict.data.split(',');
+    
     return text.split('').map(char => {
         const code = char.charCodeAt(0);
         const index = code - pinyinDict.start;
-        return (index >= 0 && index < pinyins.length) ? pinyins[index] : char;
+        
+        // 해당 인덱스에 발음 데이터가 실제 존재하는지 확인
+        const pinyin = pinyins[index];
+        if (index >= 0 && index < pinyins.length && pinyin && pinyin !== "null") {
+            return pinyin;
+        }
+        return char; // 발음이 없으면 한자 그대로(예: 〇) 보여줌
     }).join(' ');
 }
 
