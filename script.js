@@ -52,7 +52,7 @@ async function doTranslate() {
 
     // ⭐️ [핵심: 매칭 직전에 정제 수행] ⭐️
     // --- [수정된 핵심 로직: 전각 소문자 매칭] ---
-    if (sourceLang === 'ja') {
+    if (sourceLang === 'ja' || sourceLang.startsWith('zh')) {
         // 1. 반각 문자(!-~)를 전각으로 변환 (z -> ｚ, 1 -> １)
         query = query.replace(/[!-~]/g, function(s) {
             return String.fromCharCode(s.charCodeAt(0) + 0xFEE0);
