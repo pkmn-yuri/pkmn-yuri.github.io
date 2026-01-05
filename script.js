@@ -162,10 +162,26 @@ async function doTranslate() {
     }
 
     if (translation && translation !== '결과 없음' && !translation.includes('오류')) {
-        // [수정] 통합 검색 시 카테고리 뱃지 표시 (선택사항)
+        // 1. 카테고리별 표시 이름을 매핑 (원하는 이름을 여기서 수정하세요)
+        const categoryLabels = {
+            'pokemon': '포켓몬',
+            'move': '기술',
+            'item': '도구',
+            'ability': '특성', // 추가
+            'nature': '성격'   // 추가
+        };
+
+        // [수정] 통합 검색 시 카테고리 뱃지 표시
         if (categorySelect.value === 'all') {
-            const catName = category === 'pokemon' ? '포켓몬' : (category === 'move' ? '기술' : '도구');
-            resultArea.innerHTML = `<span style="font-size:0.6em; color:#888; display:block; margin-bottom:4px;">[${catName}]</span>${translation}`;
+            // 매핑 테이블에서 이름을 가져오고, 없으면 영문 카테고리명 그대로 사용
+            const catName = categoryLabels[category] || category;
+        
+            resultArea.innerHTML = `
+                <span style="font-size:0.6em; color:#888; display:block; margin-bottom:4px;">
+                    [${catName}]
+                </span>
+                ${translation}
+            `;
         } else {
             resultArea.textContent = translation;
         }
