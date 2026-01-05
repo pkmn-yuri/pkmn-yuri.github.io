@@ -110,6 +110,23 @@ async function doTranslate() {
             pronHangeul.style.display = "block";
             if(pronRomaji) pronRomaji.style.display = "block";
         } 
+        else if (targetLang.startsWith('zh')) { 
+            // 1. 사전 데이터 로딩 (비동기)
+            await loadPinyinData(); 
+
+            // 2. 한자 -> 성조 병음 추출 (3행)
+            const pinyin = getChinesePinyin(translation);
+            
+            // 3. 성조 병음 -> 한글 발음 변환 (2행)
+            const hangeul = getChineseHangeul(pinyin);
+
+            // 4. 화면 출력
+            pronHangeul.textContent = hangeul;
+            if(pronRomaji) pronRomaji.textContent = pinyin;
+            
+            pronHangeul.style.display = "block";
+            if(pronRomaji) pronRomaji.style.display = "block";
+        }
         else if (targetLang === 'ko') {
             pronHangeul.textContent = getKoreanRomaji(translation);
             pronHangeul.style.display = "block";
@@ -369,6 +386,101 @@ function getJapaneseRomaji(text) {
         }
     }
     return res;
+}
+
+const PINYIN_TONE_MAP = {
+    // a 시리즈
+    'ā': 'a', 'á': 'a', 'ǎ': 'a', 'à': 'a',
+    // e 시리즈
+    'ē': 'e', 'é': 'e', 'ě': 'e', 'è': 'e',
+    // i 시리즈
+    'ī': 'i', 'í': 'i', 'ǐ': 'i', 'ì': 'i',
+    // o 시리즈
+    'ō': 'o', 'ó': 'o', 'ǒ': 'o', 'ò': 'o',
+    // u 시리즈
+    'ū': 'u', 'ú': 'u', 'ǔ': 'u', 'ù': 'u',
+    // ü 시리즈 (ü는 발음 구분을 위해 유지)
+    'ü': 'ü', 'ǘ': 'ü', 'ǚ': 'ü', 'ǜ': 'ü', 'ǖ': 'ü',
+    // ê 시리즈 (다이어크리틱 유지하며 성조만 제거)
+    'ê': 'ê', 'ế': 'ê', 'ề': 'ê', 'ê̄': 'ê', 'ê̌': 'ê'
+};
+
+// [데이터 로드 로직]
+let pinyinDict = null;
+async function loadPinyinData() {
+    if (pinyinDict) return;
+    const response = await fetch('pinyin-data.json');
+    pinyinDict = await response.json();
+}
+
+// [3행용: 한자 -> 성조 병음]
+function getChinesePinyin(text) {
+    if (!pinyinDict || !text) return "";
+    const pinyins = pinyinDict.data.split(',');
+    return text.split('').map(char => {
+        const code = char.charCodeAt(0);
+        const index = code - pinyinDict.start;
+        return (index >= 0 && index < pinyins.length) ? pinyins[index] : char;
+    }).join(' ');
+}
+
+// [2행용: 성조 병음 -> 한글 발음]
+function getChineseHangeul(pinyinWithTone) {
+    if (!pinyinWithTone) return "";
+
+    return pinyinWithTone.split(' ').map(py => {
+        let raw = py.split('').map(c => PINYIN_TONE_MAP[c] || c).join('').toLowerCase();
+        let sm = "", um = "";
+        const smList = ["zh", "ch", "sh", "b", "p", "m", "f", "d", "t", "n", "l", "g", "k", "h", "j", "q", "x", "r", "z", "c", "s"];
+        
+        for (let s of smList) {
+            if (raw.startsWith(s)) { sm = s; um = raw.substring(s.length); break; }
+        }
+        if (!sm) um = raw; 
+
+        const smMap = {'b':'ㅂ','p':'ㅍ','m':'ㅁ','f':'ㅍ','d':'ㄷ','t':'ㅌ','n':'ㄴ','l':'ㄹ','g':'ㄱ','k':'ㅋ','h':'ㅎ','j':'ㅈ','q':'ㅊ','x':'ㅅ','zh':'ㅈ','ch':'ㅊ','sh':'ㅅ','r':'ㄹ','z':'ㅉ','c':'ㅊ','s':'ㅆ'};
+        let hangeulUm = "";
+
+        if (um === "i" && ["c", "ch", "r", "s", "sh", "z", "zh"].includes(sm)) {
+            hangeulUm = "으";
+        } else if (["j", "q", "x"].includes(sm) && ["u", "ue", "uan", "un"].includes(um)) {
+            const jqxuMap = { 'u':'위', 'ue':'웨', 'uan':'위안', 'un':'윈' };
+            hangeulUm = jqxuMap[um];
+        } else {
+            const umMap = {
+                'wei':'웨이', 'wen':'원', 'weng':'웡', 'ui': '우이', 'un': '운', 'ong': '웅',
+                'a':'아','o':'오','e':'어','ê':'에','ai':'아이','ei':'에이','ao':'아오','ou':'어우','an':'안','en':'언', 'ang':'앙','eng':'엉','er':'얼','r':'얼',
+                'yi':'이','i':'이','wu':'우','u':'우','yu':'위','ü':'위','ya':'야','ia':'야','yo':'요','ye':'예','ie':'예','yai':'야이','iai':'야이','yao':'야오','iao':'야오','you':'유','iu':'유','yan':'옌','ian':'옌','yin':'인','in':'인','yang':'양','iang':'양','ying':'잉','ing':'잉','wa':'와','ua':'와','wo':'워','uo':'워','wai':'와이','uai':'와이','wan':'완','uan':'완','wang':'왕','uang':'왕','yue':'웨','üe':'웨','yuan':'위안','üan':'위안','yun':'윈','ün':'윈','yong':'융','iong':'융'
+            };
+            hangeulUm = umMap[um] || um;
+        }
+        return assembleHangeul(smMap[sm] || "", hangeulUm);
+    }).join('');
+}
+
+// [유니코드 합성 함수]
+function assembleHangeul(cho, jung) {
+    const choList = {'ㄱ':0,'ㄴ':2,'ㄷ':3,'ㄹ':5,'ㅁ':6,'ㅂ':7,'ㅅ':9,'ㅆ':10,'ㅇ':11,'ㅈ':12,'ㅉ':13,'ㅊ':14,'ㅋ':15,'ㅌ':16,'ㅍ':17,'ㅎ':18};
+    const jungList = {'아':0,'애':1,'야':2,'얘':3,'어':4,'에':5,'여':6,'예':7,'오':8,'와':9,'왜':10,'외':11,'요':12,'우':13,'워':14,'웨':15,'위':16,'유':17,'으':18,'의':19,'이':20};
+    
+    if (jung === "우이") return (cho ? assembleHangeul(cho, "우") : "우") + "이";
+    
+    let realJung = jung, jong = "";
+    if (jung.endsWith("안") && jung !== "안") { realJung = jung.slice(0, -1); jong = "ㄴ"; }
+    else if (["안", "언", "인", "운", "원", "윈", "옌"].includes(jung)) { 
+        const map = {"안":"아","언":"어","인":"이","운":"우","원":"워","윈":"위","옌":"예"};
+        realJung = map[jung]; jong = "ㄴ"; 
+    }
+    else if (["앙", "엉", "잉", "왕", "웡", "융"].includes(jung)) {
+        const map = {"앙":"아","엉":"어","잉":"이","왕":"와","웡":"워","융":"유"};
+        realJung = map[jung]; jong = "ㅇ";
+    }
+
+    const cIdx = choList[cho] !== undefined ? choList[cho] : 11;
+    const jIdx = jungList[realJung];
+    const bIdx = jong === "ㄴ" ? 4 : (jong === "ㅇ" ? 21 : 0);
+
+    return jIdx !== undefined ? String.fromCharCode(0xAC00 + (cIdx * 588) + (jIdx * 28) + bIdx) : (cho || "") + jung;
 }
 
 // 복사 함수 정의
