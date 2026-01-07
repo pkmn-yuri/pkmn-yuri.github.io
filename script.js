@@ -45,7 +45,7 @@ async function doTranslate() {
     if (pronRomaji) pronRomaji.style.display = "none";
 
     if (!targetLang) {
-        resultArea.textContent = '번역될 언어(도착 언어)를 선택해주세요.';
+        resultArea.textContent = '번역될 언어를 선택해주세요.';
         return;
     }
     if (!query) return;
