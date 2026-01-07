@@ -129,7 +129,7 @@ async function doTranslate() {
 
     // 상황 B: 결과 언어가 'stats'(능력치)인데, 찾은 카테고리가 'nature'가 아님
     if (targetLang === 'stats' && category !== 'nature') {
-        resultArea.innerHTML = `<span style="color: #ef4444;">능력치 변화는 '성격' 카테고리에서만 확인할 수 있습니다.<br>Only Available in 'Nature' Caregory.</span>`;
+        resultArea.innerHTML = `<span style="color: #ef4444;">능력치 변화는 '성격' 카테고리에서만 확인할 수 있습니다.<br>Only Available in 'Nature' Category.</span>`;
         return;
     }
 
@@ -706,8 +706,8 @@ swapButton.addEventListener('click', () => {
     const isErrorOrPlaceholder = [
         '결과 없음', '카테고리 오류', 'API 검색 중...', '오류', 
         '결과를 찾을 수 없습니다.', '번역될 언어를 선택해주세요.',
-        '도감 번호는 '포켓몬' 카테고리에서만 확인할 수 있습니다.\nOnly Available in 'Pokémon' Category.',
-        '능력치 변화는 '성격' 카테고리에서만 확인할 수 있습니다.\nOnly Available in 'Nature' Caregory.'
+        '도감 번호는 \'포켓몬\' 카테고리에서만 확인할 수 있습니다.\nOnly Available in \'Pokémon\' Category.',
+        '능력치 변화는 \'성격\' 카테고리에서만 확인할 수 있습니다.\nOnly Available in \'Nature\' Category.'
     ].some(msg => resultText.includes(msg));
 
     if (!isErrorOrPlaceholder && resultText) {
