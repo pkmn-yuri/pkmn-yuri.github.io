@@ -123,13 +123,13 @@ async function doTranslate() {
     
     // 상황 A: 결과 언어가 'dex_id'(도감번호)인데, 찾은 카테고리가 'pokemon'이 아님
     if (targetLang === 'dex_id' && category !== 'pokemon') {
-        resultArea.innerHTML = `<span style="color: #ef4444;">⛔ 오류: 도감 번호는 '포켓몬' 카테고리에서만 확인할 수 있습니다.<br>(현재 감지된 카테고리: ${category})</span>`;
+        resultArea.innerHTML = `<span style="color: #ef4444;">도감 번호는 '포켓몬' 카테고리에서만 확인할 수 있습니다.<br>Only Available in 'Pokémon' Category.</span>`;
         return;
     }
 
     // 상황 B: 결과 언어가 'stats'(능력치)인데, 찾은 카테고리가 'nature'가 아님
     if (targetLang === 'stats' && category !== 'nature') {
-        resultArea.innerHTML = `<span style="color: #ef4444;">⛔ 오류: 능력치 변화는 '성격' 카테고리에서만 확인할 수 있습니다.<br>(현재 감지된 카테고리: ${category})</span>`;
+        resultArea.innerHTML = `<span style="color: #ef4444;">능력치 변화는 '성격' 카테고리에서만 확인할 수 있습니다.<br>Only Available in 'Nature' Caregory.</span>`;
         return;
     }
 
@@ -164,7 +164,7 @@ async function doTranslate() {
 
     // 결과 출력
     if (translation && translation !== '결과 없음' && !translation.includes('오류')) {
-        const categoryLabels = { 'pokemon': '포켓몬', 'move': '기술', 'item': '도구', 'ability': '특성', 'nature': '성격' };
+        const categoryLabels = { 'pokemon': '포켓몬(Pokémon)', 'move': '기술(Move)', 'item': '도구(Item)', 'ability': '특성(Ability)', 'nature': '성격(Nature)' };
 
         if (categorySelect.value === 'all') {
             const label = categoryLabels[category] || category;
@@ -705,7 +705,9 @@ swapButton.addEventListener('click', () => {
     // (결과가 없거나 에러 메시지인 경우 텍스트 이동 막기)
     const isErrorOrPlaceholder = [
         '결과 없음', '카테고리 오류', 'API 검색 중...', '오류', 
-        '결과를 찾을 수 없습니다.', '번역될 언어를 선택해주세요.'
+        '결과를 찾을 수 없습니다.', '번역될 언어를 선택해주세요.',
+        '도감 번호는 '포켓몬' 카테고리에서만 확인할 수 있습니다.\nOnly Available in 'Pokémon' Category.',
+        '능력치 변화는 '성격' 카테고리에서만 확인할 수 있습니다.\nOnly Available in 'Nature' Caregory.'
     ].some(msg => resultText.includes(msg));
 
     if (!isErrorOrPlaceholder && resultText) {
