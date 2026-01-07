@@ -508,7 +508,7 @@ function getChineseHangeul(pinyinWithTone) {
 
     return pinyinWithTone.split(' ').map(py => {
         // 1. 병음 성조 기호가 있는지 확인하는 정규식
-        const hasTone = /[āáǎàēéěèīíǐìōóǒòūúǔùüǘǚǜǖêếề]/.test(py);
+        const hasTone = /[aāáǎàeēéěèiīíǐìoōóǒòuūúǔùüǘǚǜǖêếề]/.test(py);
 
         // 2. 성조가 없는 순수 알파벳/기호라면 원본(py) 그대로 반환 (대소문자 유지)
         if (!hasTone) {
