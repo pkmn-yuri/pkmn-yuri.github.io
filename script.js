@@ -148,20 +148,17 @@ async function doTranslate() {
 
     // (기존 fetchFromApi 및 로컬 DB 조회 로직...)
     if (typeof foundId === 'string' || typeof foundId === 'number') {
-        const localEntry = masterDB[category].db[foundId];
-        if (localEntry) {
-            translation = localEntry[targetLang];
-            if (targetLang === 'ja') {
-                japaneseText = localEntry['ja'];
-                reading = localEntry['ja_reading_ko'];
+        if (masterDB[category] && masterDB[category].db) {
+            const localEntry = masterDB[category].db[foundId];
+            if (localEntry) {
+                translation = localEntry[targetLang];
+                if (targetLang === 'ja') {
+                    japaneseText = localEntry['ja'];
+                    reading = localEntry['ja_reading_ko'];
+                }
             }
         }
-        if (!translation) { 
-            translation = await fetchFromApi(foundId, category, sourceLang, targetLang);
-            if (targetLang === 'ja') japaneseText = translation;
-        }
     }
-
     // 결과 출력
     if (translation && translation !== '결과 없음' && !translation.includes('오류')) {
         const categoryLabels = { 'pokemon': '포켓몬(Pokémon)', 'move': '기술(Move)', 'item': '도구(Item)', 'ability': '특성(Ability)', 'nature': '성격(Nature)', 'stat': '능력(Stat)', 'type': '타입(Type)', 'ribbon': '리본(Ribbon)' };
@@ -659,8 +656,6 @@ const statAbbr = {
     "special-defense": "D",
     "speed": "S"
 };
-async function fetchFromApi(resourceId, category, sourceLang, targetLang) { if (category === 'pokemon' && targetLang === 'dex_id') { return resourceId.toString(); } if (category === 'pokemon' && sourceLang === 'dex_id') { const apiData = { id: resourceId }; return await findNameInApiData(apiData, targetLang, category); } resultArea.textContent = 'API 검색 중...'; try { const endpoint = category === 'pokemon' ? 'pokemon-species' : category; const response = await fetch(`https://pokeapi.co/api/v2/${endpoint}/${resourceId}`); if (!response.ok) { throw new Error('API 응답 실패'); } const apiData = await response.json(); if (category === 'nature' && targetLang === 'stats') { const up = apiData.increased_stat ? statAbbr[apiData.increased_stat.name] : null; const down = apiData.decreased_stat ? statAbbr[apiData.decreased_stat.name] : null; if (!up && !down) return "-"; return `${up}+ ${down}-`; } return await findNameInApiData(apiData, targetLang, category); } catch (error) { console.error('API 호출 오류:', error); return '오류: API 연결 실패'; } }
-async function findNameInApiData(apiData, langCode, category) { if (langCode === 'dex_id' && category === 'pokemon') { if (apiData.id) return apiData.id.toString(); const response = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${apiData.name}`); const speciesData = await response.json(); return speciesData.id.toString(); } const apiLangMap = { "ko":"ko", "ja":"ja-Hrkt", "en":"en", "es":"es", "es-mx":"es-mx", "fr":"fr", "de":"de", "it":"it", "zh-Hans":"zh-Hans", "zh-Hant":"zh-Hant" }; const apiLang = apiLangMap[langCode]; if (!apiLang) return null; if (apiData.id && !apiData.names) { const response = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${apiData.id}`); apiData = await response.json(); } const nameEntry = apiData.names.find(name => name.language.name === apiLang); return nameEntry ? nameEntry.name : null; }
 if (translateButton) { translateButton.addEventListener('click', doTranslate); }
 searchInput.addEventListener('keydown', function(event) { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); doTranslate(); } });
 function syncLanguages() { const sourceVal = sourceLangSelect.value; const targetVal = targetLangSelect.value; for (const option of targetLangSelect.options) { if (option.value && option.value === sourceVal) option.disabled = true; else option.disabled = false; } for (const option of sourceLangSelect.options) { if (option.value && option.value === targetVal) option.disabled = true; else option.disabled = false; } }
@@ -704,7 +699,7 @@ swapButton.addEventListener('click', () => {
     // 텍스트 교환
     // (결과가 없거나 에러 메시지인 경우 텍스트 이동 막기)
     const isErrorOrPlaceholder = [
-        '결과 없음', '카테고리 오류', 'API 검색 중...', '오류', 
+        '결과 없음', '카테고리 오류', '오류', 
         '결과를 찾을 수 없습니다.', '번역될 언어를 선택해주세요.',
         'Only Available in \'Pokémon\' Category.',
         'Only Available in \'Nature\' Category.'
