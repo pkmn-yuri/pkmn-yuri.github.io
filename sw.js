@@ -1,6 +1,6 @@
 // sw.js
 
-const CACHE_NAME = 'pkmn-translator-v1'; // 버전을 바꾸면 새로운 캐시를 받습니다.
+const CACHE_NAME = 'pkmn-translator-v2'; // 버전을 바꾸면 새로운 캐시를 받습니다.
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
